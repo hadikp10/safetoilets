@@ -297,6 +297,9 @@ alter table public.admin_actions enable row level security;
 create policy "Allow public read for profiles" on public.profiles
   for select using (true);
 
+create policy "Allow users to insert own profile" on public.profiles
+  for insert with check (auth.uid() = id);
+
 create policy "Allow users to update own profile" on public.profiles
   for update using (auth.uid() = id);
 
