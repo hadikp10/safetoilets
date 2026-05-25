@@ -24,6 +24,8 @@ export default function AddRestroomForm({
   // Step navigation
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState("");
+  const [loadingPercent, setLoadingPercent] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Form states
@@ -100,6 +102,8 @@ export default function AddRestroomForm({
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
+    setLoadingStage("Saving restroom location details...");
+    setLoadingPercent(20);
 
     try {
       let uploadedImageUrl: string | null = null;
@@ -128,7 +132,12 @@ export default function AddRestroomForm({
 
       // 2. Upload image if selected
       if (photo && tempId) {
+        setLoadingStage("Compressing photo (removing GPS metadata)...");
+        setLoadingPercent(45);
         const compressedBlob = await compressImage(photo);
+        
+        setLoadingStage("Uploading photo to secure storage...");
+        setLoadingPercent(75);
         const fileName = `${tempId}/${Date.now()}-upload.jpg`;
 
         const { error: uploadError } = await supabase.storage
@@ -145,10 +154,14 @@ export default function AddRestroomForm({
           .getPublicUrl(fileName);
 
         uploadedImageUrl = publicUrl;
+      } else {
+        setLoadingPercent(75);
       }
 
       // 3. Add initial restroom verification log row
       // This will automatically trigger `update_restroom_averages()` to populate restroom ratings cached scores
+      setLoadingStage("Publishing rating verification...");
+      setLoadingPercent(90);
       const { error: verifyError } = await supabase
         .from("restroom_verifications")
         .insert({
@@ -168,6 +181,8 @@ export default function AddRestroomForm({
       if (verifyError) throw verifyError;
 
       // 4. Fetch fully computed restroom data
+      setLoadingStage("Finalizing map synchronization...");
+      setLoadingPercent(100);
       const { data: finalRestroomData, error: fetchError } = await supabase
         .from("restrooms")
         .select("*")
@@ -176,12 +191,16 @@ export default function AddRestroomForm({
 
       if (fetchError) throw fetchError;
 
+      // Introduce a tiny delay so the user sees the complete status bar animation
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
       onSuccess(finalRestroomData as Restroom);
     } catch (err) {
       console.error("Error creating restroom:", err);
       setErrorMsg((err as Error).message || "Could not add restroom. Please verify connection and try again.");
-    } finally {
       setLoading(false);
+      setLoadingStage("");
+      setLoadingPercent(0);
     }
   };
 
@@ -235,7 +254,7 @@ export default function AddRestroomForm({
               Add New Toilet
             </h2>
             <span className="text-[10px] text-stone-450 dark:text-stone-500 font-bold uppercase tracking-wider mt-0.5">
-              Step {step} of 5
+              {loading ? "Publishing..." : `Step ${step} of 5`}
             </span>
           </div>
           <button
@@ -249,14 +268,102 @@ export default function AddRestroomForm({
           </button>
         </div>
 
-        {errorMsg && (
+        {loading && (
+          <div className="p-8 flex flex-col items-center justify-center text-center my-6 animate-fade-in">
+            {/* Progress Circular Bar */}
+            <div className="relative w-24 h-24 flex items-center justify-center mb-6">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                {/* Background circle */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="transparent"
+                  className="text-stone-100 dark:text-stone-800"
+                />
+                {/* Active progress arc */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="transparent"
+                  strokeDasharray={251.2}
+                  strokeDashoffset={251.2 - (251.2 * loadingPercent) / 100}
+                  className="text-black dark:text-white transition-all duration-300 ease-out"
+                  strokeLinecap="round"
+                />
+              </svg>
+              {/* Central Text */}
+              <span className="absolute text-sm font-black text-stone-900 dark:text-white">
+                {loadingPercent}%
+              </span>
+            </div>
+
+            <h3 className="text-sm font-extrabold text-stone-950 dark:text-white uppercase tracking-wider mb-2">
+              Publishing Toilet
+            </h3>
+            <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold max-w-[260px] leading-relaxed h-8">
+              {loadingStage}
+            </p>
+
+            {/* Custom Visual Step List */}
+            <div className="w-full max-w-[240px] mt-6 space-y-2.5 text-left border-t border-stone-100 dark:border-stone-800 pt-6">
+              <div className="flex items-center gap-2.5 text-2xs font-bold uppercase tracking-wider">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] ${
+                  loadingPercent > 20 
+                    ? "bg-black border-black text-white dark:bg-white dark:text-black dark:border-white font-extrabold" 
+                    : "border-stone-300 text-stone-450 dark:border-stone-700"
+                }`}>
+                  {loadingPercent > 20 ? "✓" : "1"}
+                </div>
+                <span className={loadingPercent >= 20 ? "text-stone-900 dark:text-white" : "text-stone-400 dark:text-stone-600"}>
+                  Location Details
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5 text-2xs font-bold uppercase tracking-wider">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] ${
+                  !photo 
+                    ? "bg-stone-100 border-stone-200 text-stone-400 dark:bg-stone-800 dark:border-stone-700" 
+                    : loadingPercent > 75 
+                    ? "bg-black border-black text-white dark:bg-white dark:text-black dark:border-white font-extrabold" 
+                    : "border-stone-300 text-stone-450 dark:border-stone-700"
+                }`}>
+                  {!photo ? "—" : loadingPercent > 75 ? "✓" : "2"}
+                </div>
+                <span className={!photo ? "text-stone-350 dark:text-stone-600 line-through font-normal" : loadingPercent >= 45 ? "text-stone-900 dark:text-white" : "text-stone-400 dark:text-stone-600"}>
+                  Photo Upload {!photo && <span className="text-[9px] lowercase italic font-normal text-stone-400 dark:text-stone-600 ml-1">(skipped)</span>}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5 text-2xs font-bold uppercase tracking-wider">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[10px] ${
+                  loadingPercent > 90 
+                    ? "bg-black border-black text-white dark:bg-white dark:text-black dark:border-white font-extrabold" 
+                    : "border-stone-300 text-stone-450 dark:border-stone-700"
+                }`}>
+                  {loadingPercent > 90 ? "✓" : "3"}
+                </div>
+                <span className={loadingPercent >= 90 ? "text-stone-900 dark:text-white" : "text-stone-400 dark:text-stone-600"}>
+                  Verify & Rate
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!loading && errorMsg && (
           <div className="mx-6 mt-4 bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-semibold dark:bg-rose-950/20 dark:border-rose-900 dark:text-rose-400">
             {errorMsg}
           </div>
         )}
 
         {/* STEP 1: Verify Location coordinates & Check Duplicates */}
-        {step === 1 && (
+        {!loading && step === 1 && (
           <div className="p-6 flex flex-col gap-5">
             <div className="bg-stone-50 dark:bg-stone-850/50 border border-stone-200 dark:border-stone-800 rounded-xl p-4 text-xs font-semibold">
               <p className="text-stone-500 dark:text-stone-400 mb-2">Picked Coordinates:</p>
@@ -312,7 +419,7 @@ export default function AddRestroomForm({
         )}
 
         {/* STEP 2: Name and Address */}
-        {step === 2 && (
+        {!loading && step === 2 && (
           <div className="p-6 flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
@@ -362,7 +469,7 @@ export default function AddRestroomForm({
         )}
 
         {/* STEP 3: Basic Toilet Features */}
-        {step === 3 && (
+        {!loading && step === 3 && (
           <div className="p-6 flex flex-col gap-4">
             {/* Category Type */}
             <div className="flex flex-col gap-1.5">
@@ -462,7 +569,7 @@ export default function AddRestroomForm({
         )}
 
         {/* STEP 4: Initial Ratings */}
-        {step === 4 && (
+        {!loading && step === 4 && (
           <div className="p-6 flex flex-col gap-4">
             {renderRatingGroup("Cleanliness", cleanliness, setCleanliness)}
             {renderRatingGroup("Smell Level (1 = heavy, 5 = fresh)", smell, setSmell)}
@@ -490,7 +597,7 @@ export default function AddRestroomForm({
         )}
 
         {/* STEP 5: Facilities & Optional Photo Capture */}
-        {step === 5 && (
+        {!loading && step === 5 && (
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
             {/* Facilities checklist */}
             <div className="bg-stone-50 dark:bg-stone-850/50 rounded-xl p-4 border border-stone-100 dark:border-stone-800 flex flex-col gap-3">
