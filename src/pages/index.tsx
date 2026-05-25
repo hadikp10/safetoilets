@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSupabase } from "@/hooks/useSupabase";
@@ -25,7 +26,8 @@ const MapContainer = dynamic(() => import("@/components/Map/MapContainer"), {
 });
 
 export default function Home() {
-  const { user, profile, isAuthenticated, isAdmin, loginWithGoogle, logout } = useSupabase();
+  const { user, profile, isAuthenticated, isAdmin, logout } = useSupabase();
+  const router = useRouter();
   const { latitude, longitude, error: geoError, loading: geoLoading, getPosition } = useGeolocation();
 
   // Application Views & Data
@@ -213,7 +215,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     if (!isAuthenticated) {
-                      loginWithGoogle();
+                      router.push("/login");
                     } else {
                       setIsAddingMode(true);
                       setSelectedRestroom(null);
@@ -293,7 +295,7 @@ export default function Home() {
               onVerify={() => setShowVerifyForm(true)}
               onReport={() => setShowReportForm(true)}
               isAuthenticated={isAuthenticated}
-              onLoginPrompt={loginWithGoogle}
+              onLoginPrompt={() => router.push("/login")}
             />
           )}
 
