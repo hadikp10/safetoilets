@@ -73,6 +73,12 @@ body {
 }
 
 /* Custom Marker Styling */
+.custom-leaflet-icon,
+.custom-leaflet-icon-pill {
+  background: transparent !important;
+  border: none !important;
+}
+
 .custom-map-marker {
   display: flex;
   align-items: center;

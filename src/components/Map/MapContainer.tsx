@@ -79,10 +79,10 @@ export default function MapContainer({
       }
     });
 
-    // Minimalistic modern theme tiles (CartoDB tiles are beautiful and minimalist)
+    // Minimalistic modern theme tiles (CartoDB Positron/Dark Matter are clean and minimalist)
     const tileUrl = theme === "dark"
       ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
     const attribution = "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OSM</a> contributors &copy; <a href=\"https://carto.com/attributions\">CARTO</a>";
 
@@ -103,21 +103,30 @@ export default function MapContainer({
 
       const score = restroom.overall_score;
       // Green = Clean (>= 3.8), Yellow = Average (>= 2.5), Red = Poor (< 2.5)
-      let colorClass = "bg-emerald-500 border-emerald-200";
+      let colorClass = "bg-emerald-500 border-emerald-400 text-white";
       if (score > 0 && score < 2.5) {
-        colorClass = "bg-rose-500 border-rose-200";
+        colorClass = "bg-rose-500 border-rose-400 text-white";
       } else if (score >= 2.5 && score < 3.8) {
-        colorClass = "bg-amber-500 border-amber-200";
+        colorClass = "bg-amber-500 border-amber-400 text-white";
       } else if (score === 0) {
-        colorClass = "bg-stone-400 border-stone-200"; // Unverified / New
+        colorClass = "bg-stone-500 border-stone-400 text-white"; // Unverified / New
       }
 
-      // Modern dot marker
+      // Modern information-rich pill marker
+      const scoreStr = score > 0 ? Number(score).toFixed(1) : "New";
       const customIcon = L.divIcon({
-        className: "custom-leaflet-icon",
-        html: `<div class="w-6 h-6 rounded-full ${colorClass} border-4 shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-125"></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        className: "custom-leaflet-icon-pill",
+        html: `
+          <div class="flex flex-col items-center group transition-all duration-200 hover:scale-105 active:scale-95">
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black shadow-md border ${colorClass}">
+              <span>🚽</span>
+              <span>${scoreStr}</span>
+            </div>
+            <div class="w-1.5 h-1.5 -mt-0.5 rotate-45 border-r border-b ${colorClass}"></div>
+          </div>
+        `,
+        iconSize: [54, 26],
+        iconAnchor: [27, 26],
       });
 
       const marker = L.marker([restroom.latitude, restroom.longitude], { icon: customIcon })

@@ -71,6 +71,41 @@ export function useSupabase() {
     }
   };
 
+  const loginWithEmail = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Login failed:", err);
+      setLoading(false);
+      throw err;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string, fullName?: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName || "Anonymous User",
+          },
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Sign up failed:", err);
+      setLoading(false);
+      throw err;
+    }
+  };
+
   const logout = async () => {
     try {
       setLoading(true);
@@ -90,6 +125,8 @@ export function useSupabase() {
     profile,
     loading,
     loginWithGoogle,
+    loginWithEmail,
+    signUpWithEmail,
     logout,
     isAuthenticated: !!user,
     isAdmin: profile?.is_admin ?? false,

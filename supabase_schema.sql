@@ -289,9 +289,14 @@ create policy "Allow public read for profiles" on public.profiles
 create policy "Allow users to update own profile" on public.profiles
   for update using (auth.uid() = id);
 
-create policy "Admins can do everything on profiles" on public.profiles
-  for all using (
-    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+create policy "Admins can update profiles" on public.profiles
+  for update using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
+  );
+
+create policy "Admins can delete profiles" on public.profiles
+  for delete using (
+    (select is_admin from public.profiles where id = auth.uid()) = true
   );
 
 -- Restrooms Policies

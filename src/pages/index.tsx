@@ -123,12 +123,12 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={loginWithGoogle}
-              className="h-8 px-3 bg-black text-white dark:bg-white dark:text-black rounded-lg text-xs font-bold hover:bg-black/90 active:scale-95 transition-all"
+            <Link
+              href="/login"
+              className="h-8 px-3 bg-black text-white dark:bg-white dark:text-black rounded-lg text-xs font-bold flex items-center justify-center hover:bg-black/90 active:scale-95 transition-all"
             >
               Login
-            </button>
+            </Link>
           )}
         </div>
       </header>
