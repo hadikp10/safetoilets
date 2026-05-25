@@ -260,7 +260,6 @@ export default function AddRestroomForm({
           <button
             onClick={onClose}
             className="text-stone-400 hover:text-stone-600 dark:text-stone-500"
-            disabled={loading}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
