@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F7F5F0; /* Soft warm alabaster/cream background */
+  --foreground: #1C1917; /* Stone 900 */
+  --card-bg: #FFFFFF;
+  --card-border: #E7E5E4; /* Stone 200 */
+  --accent: #1C1917;
+  --accent-foreground: #F7F5F0;
+  
+  --score-green: #10B981;
+  --score-yellow: #F59E0B;
+  --score-red: #EF4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0C0A09; /* Stone 950 */
+    --foreground: #F7F5F0;
+    --card-bg: #1C1917; /* Stone 900 */
+    --card-border: #2E2A27; /* Stone 800 */
+    --accent: #F7F5F0;
+    --accent-foreground: #0C0A09;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Leaflet Map Styling Override */
+.leaflet-container {
+  font-family: inherit;
+  background-color: var(--background) !important;
+}
+
+/* Make map attribution very minimal and compact */
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(4px);
+  border-radius: 4px;
+  color: #78716C !important;
+}
+
+.leaflet-bar {
+  border: 1px solid var(--card-border) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  background-color: var(--card-bg) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--card-border) !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--background) !important;
+}
+
+/* Hide zoom controls for an ultra-clean map if desired, or position nicely */
+.leaflet-top.leaflet-left {
+  margin-top: 12px;
+  margin-left: 12px;
+}
+
+/* Custom Marker Styling */
+.custom-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.marker-pin {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid white;
+}
+
+.marker-pin-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: white;
+}
+
+/* Hide scrollbar on components but keep function */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe Bottom-Sheet Slide Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
