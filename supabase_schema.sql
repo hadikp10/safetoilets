@@ -1,6 +1,17 @@
 -- SafeToilets Supabase Setup SQL DDL
 -- Paste this script into your Supabase SQL Editor to configure the database schema, RLS, and rate-limiting triggers.
 
+-- Clean up existing tables and functions to allow clean reinstall/reset
+drop table if exists public.admin_actions cascade;
+drop table if exists public.reports cascade;
+drop table if exists public.restroom_verifications cascade;
+drop table if exists public.restrooms cascade;
+drop table if exists public.profiles cascade;
+
+drop function if exists public.handle_new_user() cascade;
+drop function if exists public.update_restroom_averages() cascade;
+drop function if exists public.check_contribution_rate_limit() cascade;
+
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
