@@ -1,19 +1,8 @@
 import "@/styles/globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Mono } from "next/font/google";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-dm-sans",
-});
-
-const dmMono = DM_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-dm-mono",
-});
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 
 export const metadata: Metadata = {
   title: "SafeToilets | Kerala",
@@ -29,7 +18,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1.0,
-  themeColor: "#16A34A",
+  themeColor: "#2F9E44",
 };
 
 import { ToastProvider } from "@/context/ToastContext";
@@ -44,7 +33,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className={`${dmSans.variable} ${dmMono.variable} font-sans h-full bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans h-full bg-white text-[#191919]`}>
         <ToastProvider>
           {children}
         </ToastProvider>

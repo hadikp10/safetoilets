@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSupabase } from "@/hooks/useSupabase";
-import Button from "@/components/ui/Button";
 
 export default function LoginPage() {
   const { loginWithGoogle, isAuthenticated, loading } = useSupabase();
   const router = useRouter();
+  const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -18,10 +18,25 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, loading, router]);
 
-  if (loading) {
+  const handleGoogleLogin = async () => {
+    setAuthLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      console.error("Google OAuth error:", err);
+      setAuthLoading(false);
+    }
+  };
+
+  const isBtnDisabled = loading || authLoading;
+
+  if (loading && !authLoading) {
     return (
-      <div className="min-h-screen bg-surface-bg dark:bg-dark-bg flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-4 border-brand-green border-t-transparent animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <svg className="animate-spin h-6 w-6 text-[#2F9E44]" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
+        </svg>
       </div>
     );
   }
@@ -31,57 +46,69 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-bg dark:bg-dark-bg flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm flex flex-col text-center">
-        {/* Brand Marker */}
-        <div className="mb-6 flex justify-center">
-          <div className="w-12 h-12 bg-brand-green text-text-inverse rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-md">
-            ST
-          </div>
-        </div>
-
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary dark:text-text-inverse leading-snug">
+    <div className="min-h-screen bg-white text-[#191919] flex flex-col justify-start px-4 pt-20 pb-8 animate-fadeIn">
+      <div className="w-full max-w-[320px] mx-auto flex flex-col items-stretch">
+        
+        {/* Title / Brand */}
+        <h1 className="text-[24px] font-semibold text-[#191919] tracking-tight text-left">
           SafeToilets
         </h1>
-        <p className="text-xs text-text-secondary font-medium mt-1">
-          Crowdsourced clean toilet locator for Kerala, India
+        
+        {/* Subtext */}
+        <p className="text-[14px] text-[#6B6B6B] mt-1 mb-10 text-left">
+          Find clean toilets near you in Kerala.
         </p>
 
-        {/* Login Button Card */}
-        <div className="mt-8 bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-6 shadow-sm">
-          <p className="text-xs text-text-secondary font-semibold mb-4 leading-relaxed">
-            You must log in to register new toilets or verify details.
-          </p>
-
-          <Button
-            onClick={loginWithGoogle}
-            disabled={loading}
-            variant="primary"
-            fullWidth
-            className="h-12 text-xs flex items-center justify-center gap-3"
-          >
-            {loading ? (
-              <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        {/* Google Button */}
+        <button
+          onClick={handleGoogleLogin}
+          disabled={isBtnDisabled}
+          className="w-full h-[40px] rounded-lg bg-white border border-[#E9E9E7] shadow-sm flex items-center justify-center gap-3 px-4 hover:bg-[#F7F7F5] hover:border-[#D3D3CF] active:scale-[0.99] transition-all disabled:opacity-70 disabled:pointer-events-none"
+        >
+          {authLoading ? (
+            <svg className="animate-spin h-4 w-4 text-[#6B6B6B]" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
+            </svg>
+          ) : (
+            <>
+              {/* Google G SVG */}
+              <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  fill="#EA4335"
+                />
               </svg>
-            ) : (
-              <>
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.52 4.114-5.127 4.114a5.955 5.955 0 0 1-5.96-5.96 5.955 5.955 0 0 1 5.96-5.96c2.323 0 4.148 1.488 4.908 3.518l3.96-2.3C20.61 3.565 16.7 1 12 1 5.925 1 1 5.925 1 12s4.925 11 11 11c5.8 0 10.825-4.145 10.825-11 0-.69-.065-1.39-.185-2.015H12.24z" />
-                </svg>
+              <span className="text-[14px] font-medium text-[#191919]">
                 Continue with Google
-              </>
-            )}
-          </Button>
-        </div>
+              </span>
+            </>
+          )}
+        </button>
 
-        {/* Back Link */}
+        {/* Legal Disclaimer */}
+        <p className="text-[11px] text-[#999999] text-center mt-6 leading-relaxed">
+          By signing in you agree to help keep SafeToilets accurate and respectful.
+        </p>
+
+        {/* Cancel/Browse link */}
         <Link
           href="/"
-          className="text-text-secondary hover:text-text-primary dark:hover:text-text-inverse text-xs font-semibold mt-6 transition-colors min-h-[44px] flex items-center justify-center"
+          className="text-center text-xs font-medium text-[#6B6B6B] hover:text-[#191919] mt-8 transition-colors"
         >
-          Browse toilets without logging in
+          Cancel and return home
         </Link>
       </div>
     </div>

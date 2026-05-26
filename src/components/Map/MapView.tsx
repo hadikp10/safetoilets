@@ -28,7 +28,6 @@ export default function MapView({
   const markersRef = useRef<{ [key: string]: L.Marker }>({});
   const userMarkerRef = useRef<L.Marker | null>(null);
   const additionMarkerRef = useRef<L.Marker | null>(null);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const lastFlownRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   // Fix webpack marker icon issues (Section 3d)
@@ -40,19 +39,6 @@ export default function MapView({
       iconRetinaUrl: "/icons/marker-default-2x.png",
       shadowUrl: "/icons/marker-shadow.png",
     });
-  }, []);
-
-  // Track system theme
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(isDark ? "dark" : "light");
-      
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = (e: MediaQueryListEvent) => setTheme(e.matches ? "dark" : "light");
-      mediaQuery.addEventListener("change", handler);
-      return () => mediaQuery.removeEventListener("change", handler);
-    }
   }, []);
 
   // 1. Initialize Map
@@ -137,7 +123,7 @@ export default function MapView({
     }
   }, [map, userCoords]);
 
-  // 2. Tile Layer Update based on Theme
+  // 2. Tile Layer (Light tiles only to support paper aesthetic)
   useEffect(() => {
     if (!map) return;
  
@@ -147,14 +133,11 @@ export default function MapView({
       }
     });
 
-    const tileUrl = theme === "dark"
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-
-    const attribution = `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>`;
+    const tileUrl = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+    const attribution = `&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>`;
 
     L.tileLayer(tileUrl, { attribution, maxZoom: 19 }).addTo(map);
-  }, [map, theme]);
+  }, [map]);
 
   // 3. Render Restroom Markers (Only if NOT in adding mode)
   useEffect(() => {
@@ -173,7 +156,7 @@ export default function MapView({
           className: "",
           html: `<div style="
             width:14px;height:14px;border-radius:50%;
-            background:${color === "green" ? "#16A34A" : color === "yellow" ? "#D97706" : "#DC2626"};
+            background:${color === "green" ? "#2F9E44" : color === "yellow" ? "#E67700" : "#E03131"};
             border:2px solid white;
             box-shadow:0 2px 6px rgba(0,0,0,0.3);
           "></div>`,
@@ -194,12 +177,12 @@ export default function MapView({
       const score = restroom.overall_score;
       const color = score >= 4 ? "green" : score >= 2.5 ? "yellow" : "red";
 
-      // Div icon marker (Section 3e)
+      // Div icon marker
       const customIcon = L.divIcon({
         className: "",
         html: `<div style="
           width:14px;height:14px;border-radius:50%;
-          background:${color === "green" ? "#16A34A" : color === "yellow" ? "#D97706" : "#DC2626"};
+          background:${color === "green" ? "#2F9E44" : color === "yellow" ? "#E67700" : "#E03131"};
           border:2px solid white;
           box-shadow:0 2px 6px rgba(0,0,0,0.3);
         "></div>`,
@@ -265,8 +248,8 @@ export default function MapView({
         className: "",
         html: `
           <div class="flex flex-col items-center select-none" style="transform: translateY(-40px);">
-            <div style="background:#1C1917;color:white;padding:3px 8px;font-size:10px;font-weight:bold;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);white-space:nowrap;margin-bottom:4px;">DRAG ME</div>
-            <div style="width:24px;height:24px;border-radius:50%;background:#1C1917;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
+            <div style="background:#191919;color:white;padding:3px 8px;font-size:10px;font-weight:bold;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);white-space:nowrap;margin-bottom:4px;">DRAG ME</div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#191919;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
               <div style="width:6px;height:6px;background:white;border-radius:50%;margin:auto;"></div>
             </div>
           </div>

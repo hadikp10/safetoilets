@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useSupabase } from "@/hooks/useSupabase";
 import { useLocation, isCoordsInKerala } from "@/lib/hooks/useLocation";
 import { useToast } from "@/context/ToastContext";
-import Button from "@/components/ui/Button";
 import MapSkeleton from "@/components/Map/MapSkeleton";
 import imageCompression from "browser-image-compression";
 import { Restroom } from "@/types";
@@ -44,7 +43,7 @@ export default function AddToiletPage() {
   const [accessibilityAnswer, setAccessibilityAnswer] = useState<"yes" | "no" | null>(null);
   const [isAccessible, setIsAccessible] = useState(false);
 
-  // Initial Ratings (initialized to 0 to force user rating, satisfying "no 0-star submission")
+  // Initial Ratings
   const [cleanliness, setCleanliness] = useState(0);
   const [smell, setSmell] = useState(0);
   const [lighting, setLighting] = useState(0);
@@ -54,7 +53,7 @@ export default function AddToiletPage() {
   // Facilities Checklist
   const [hasSoap, setHasSoap] = useState(false);
   const [hasMirror, setHasMirror] = useState(false);
-  const [hasSanRoot, setHasSanRoot] = useState(false); // maps to has_sanitary_disposal
+  const [hasSanRoot, setHasSanRoot] = useState(false);
 
   // Image Upload & Progress
   const [photo, setPhoto] = useState<File | null>(null);
@@ -88,7 +87,7 @@ export default function AddToiletPage() {
     }
   }, [gpsLat, gpsLng, latitude, longitude]);
 
-  // Duplicate Check (within 50 meters)
+  // Duplicate check
   useEffect(() => {
     if (latitude && longitude) {
       const checkDuplicate = async () => {
@@ -117,7 +116,7 @@ export default function AddToiletPage() {
     }
   }, [latitude, longitude]);
 
-  // Restore State from sessionStorage on Mount
+  // Restore state from sessionStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = sessionStorage.getItem("add_toilet_form_state");
@@ -151,7 +150,7 @@ export default function AddToiletPage() {
     }
   }, []);
 
-  // Save State to sessionStorage on Change
+  // Save State
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stateObj = {
@@ -197,8 +196,11 @@ export default function AddToiletPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-surface-bg dark:bg-dark-bg flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-4 border-brand-green border-t-transparent animate-spin"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <svg className="animate-spin h-6 w-6 text-[#2F9E44]" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
+        </svg>
       </div>
     );
   }
@@ -215,7 +217,6 @@ export default function AddToiletPage() {
   const handleNext = () => {
     setErrorMsg(null);
 
-    // STEP 1: Coordinates validation
     if (step === 1) {
       if (!latitude || !longitude) {
         setErrorMsg("Please drop a pin on the map.");
@@ -229,7 +230,6 @@ export default function AddToiletPage() {
       }
       setStep(2);
     } 
-    // STEP 2: Name & Address & Type validation
     else if (step === 2) {
       if (!name.trim()) {
         setErrorMsg("Please enter a restroom title.");
@@ -248,7 +248,6 @@ export default function AddToiletPage() {
       }
       setStep(3);
     } 
-    // STEP 3: Gender access
     else if (step === 3) {
       if (!genderAccess) {
         setErrorMsg("Please select gender access.");
@@ -257,7 +256,6 @@ export default function AddToiletPage() {
       }
       setStep(4);
     } 
-    // STEP 4: Toilet type
     else if (step === 4) {
       if (!toiletType) {
         setErrorMsg("Please select a toilet style.");
@@ -266,16 +264,14 @@ export default function AddToiletPage() {
       }
       setStep(5);
     } 
-    // STEP 5: Accessibility (Yes/No answered)
     else if (step === 5) {
       if (accessibilityAnswer === null) {
-        setErrorMsg("Please select whether the toilet is wheelchair accessible.");
+        setErrorMsg("Please select wheelchair accessibility.");
         triggerShake();
         return;
       }
       setStep(6);
     } 
-    // STEP 6: Ratings (All 5 must be >= 1 star)
     else if (step === 6) {
       if (cleanliness < 1 || smell < 1 || lighting < 1 || womenSafety < 1 || waterAvailability < 1) {
         setErrorMsg("Please select at least 1 star for all rating categories.");
@@ -284,7 +280,6 @@ export default function AddToiletPage() {
       }
       setStep(7);
     } 
-    // STEP 7: Amenities Checklist (No validation needed)
     else if (step === 7) {
       setStep(8);
     }
@@ -312,7 +307,7 @@ export default function AddToiletPage() {
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        setErrorMsg("File size exceeds 5MB limit before compression.");
+        setErrorMsg("File size exceeds 5MB limit.");
         return;
       }
       setPhoto(file);
@@ -335,7 +330,6 @@ export default function AddToiletPage() {
       let photoBase64: string | null = null;
 
       if (fileToUpload) {
-        // Validation check again just in case
         if (!fileToUpload.type.startsWith("image/")) {
           throw new Error("Uploaded file must be an image.");
         }
@@ -346,7 +340,6 @@ export default function AddToiletPage() {
         setPrivacyStatus("compressing");
         setUploadProgress(10);
 
-        // Client-side image compression
         const options = {
           maxSizeMB: 0.5,
           maxWidthOrHeight: 1200,
@@ -362,12 +355,10 @@ export default function AddToiletPage() {
         setUploadProgress(50);
       }
 
-      // Read authorization token
       const { supabase } = await import("@/lib/supabase");
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      // Submit via XMLHttpRequest to track progress
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "/api/toilets");
       xhr.setRequestHeader("Content-Type", "application/json");
@@ -448,456 +439,505 @@ export default function AddToiletPage() {
     setValue: (val: number) => void
   ) => {
     return (
-      <div className="flex flex-col gap-1">
-        <div className="flex justify-between text-xs font-semibold text-text-secondary">
-          <span>{label}</span>
-          <span className="text-brand-green font-bold">{value > 0 ? `${value} ★` : "Select Rating"}</span>
-        </div>
-        <div className="flex bg-surface-muted dark:bg-dark-muted p-1 rounded-xl w-full border border-surface-border dark:border-dark-border">
-          {[1, 2, 3, 4, 5].map((num) => (
-            <button
-              key={num}
-              type="button"
-              onClick={() => setValue(num)}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition min-h-[36px] active:scale-95`}
-              style={{
-                backgroundColor: value === num ? "var(--btn-bg)" : "transparent",
-              }}
-            >
-              {num}
-            </button>
-          ))}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+          {label}
+        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center">
+            {[1, 2, 3, 4, 5].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setValue(num)}
+                className="w-11 h-11 flex items-center justify-center text-[28px] focus:outline-none transition-transform active:scale-90"
+                style={{ color: num <= value ? "#2F9E44" : "#E9E9E7" }}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          <span className="font-mono text-base font-semibold text-[#191919] ml-2">
+            {value > 0 ? `${value}.0` : "—"}
+          </span>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse px-4 py-4 flex flex-col gap-4 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll">
+    <div className="min-h-screen bg-white text-[#191919] flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll animate-fadeIn text-left">
       
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-surface-border dark:border-dark-border pb-3">
-        <div className="flex flex-col">
-          <h1 className="text-lg font-bold">Add New Toilet</h1>
-          <span className="text-[10px] text-brand-green font-semibold uppercase tracking-wider">Step {step} of 8</span>
+      {/* Step Header */}
+      <div className="flex flex-col pt-6 px-4">
+        <div className="flex justify-between items-center">
+          <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+            Step {step} of 8
+          </span>
+          <button
+            onClick={() => router.push("/")}
+            disabled={loading}
+            className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium min-h-[36px]"
+          >
+            Cancel
+          </button>
         </div>
-        <Button variant="ghost" className="h-9 px-3 text-xs" onClick={() => router.push("/")} disabled={loading}>
-          Cancel
-        </Button>
+        <h1 className="text-[20px] font-semibold text-[#191919] tracking-tight leading-snug mt-1">
+          {step === 1 && "Select location"}
+          {step === 2 && "Restroom details"}
+          {step === 3 && "Gender access"}
+          {step === 4 && "Toilet style"}
+          {step === 5 && "Wheelchair accessibility"}
+          {step === 6 && "Quality ratings"}
+          {step === 7 && "Amenities checklist"}
+          {step === 8 && "Photo upload"}
+        </h1>
+      </div>
+
+      {/* Thin document progress style */}
+      <div className="w-full h-[2px] bg-[#E9E9E7] relative">
+        <div 
+          className="h-full bg-[#2F9E44] transition-all duration-300"
+          style={{ width: `${(step / 8) * 100}%` }}
+        />
       </div>
 
       {errorMsg && (
-        <div className="bg-brand-redLight text-brand-red p-3 rounded-xl text-xs font-semibold animate-fade-in">
+        <div className="mx-4 bg-[#FFF0F0] border border-[#E03131]/30 text-[#C21010] p-3 rounded-lg text-xs font-semibold animate-fadeIn">
           {errorMsg}
         </div>
       )}
 
-      {/* STEP 1: Select Location (GPS / Map drop pin) */}
-      {step === 1 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <p className="text-xs text-text-secondary leading-relaxed">
-            Drag the pin to place it exactly where the restroom is located physically.
-          </p>
+      {/* Inner Step Layout - wrapped with horizontal margins */}
+      <div className="px-4 flex-1 flex flex-col gap-4">
+        
+        {/* STEP 1: Select Location */}
+        {step === 1 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <p className="text-[14px] text-[#6B6B6B] leading-relaxed">
+              Drag the pin to place it exactly where the restroom is located.
+            </p>
 
-          <div className="w-full h-[50vh] rounded-2xl overflow-hidden border border-surface-border dark:border-dark-border relative bg-surface-muted dark:bg-dark-muted flex items-center justify-center">
-            {gpsLoading && !latitude ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 rounded-full border-4 border-brand-green border-t-transparent animate-spin"></div>
-                <span className="text-xs text-text-secondary">Detecting GPS location...</span>
+            <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-[#E9E9E7] relative bg-[#F7F7F5] flex items-center justify-center">
+              {gpsLoading && !latitude ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 rounded-full border-4 border-[#2F9E44] border-t-transparent animate-spin"></div>
+                  <span className="text-xs text-[#6B6B6B]">Detecting GPS location...</span>
+                </div>
+              ) : (
+                <MapView
+                  toilets={[]}
+                  selectedToilet={null}
+                  onSelectToilet={() => {}}
+                  userCoords={latitude && longitude ? { latitude, longitude } : null}
+                  isAddingMode={true}
+                  onLocationSelect={(lat, lng) => {
+                    setLatitude(lat);
+                    setLongitude(lng);
+                  }}
+                />
+              )}
+            </div>
+
+            {latitude && longitude && (
+              <div className="bg-[#F7F7F5] rounded-xl p-3 text-center text-xs font-mono border border-[#E9E9E7] text-[#6B6B6B]">
+                Position: {latitude.toFixed(5)}, {longitude.toFixed(5)}
               </div>
-            ) : (
-              <MapView
-                toilets={[]}
-                selectedToilet={null}
-                onSelectToilet={() => {}}
-                userCoords={latitude && longitude ? { latitude, longitude } : null}
-                isAddingMode={true}
-                onLocationSelect={(lat, lng) => {
-                  setLatitude(lat);
-                  setLongitude(lng);
-                }}
-              />
             )}
-          </div>
 
-          {latitude && longitude && (
-            <div className="bg-surface-muted dark:bg-dark-muted rounded-xl p-3 text-center text-xs font-mono border border-surface-border dark:border-dark-border">
-              Confirm this location: {latitude.toFixed(5)}, {longitude.toFixed(5)}
-            </div>
-          )}
+            {gpsError && (
+              <div className="text-xs text-[#C21010] font-semibold bg-[#FFF0F0] p-2.5 rounded-lg border border-[#E03131]/10 text-center">
+                📍 GPS detection failed. Tap on the map to place the pin manually.
+              </div>
+            )}
 
-          {gpsError && (
-            <div className="text-xs text-brand-red font-semibold bg-brand-redLight p-2.5 rounded-xl text-center">
-              📍 GPS detection failed. Tap on the map to place the pin manually.
-            </div>
-          )}
-
-          {/* Duplicate Banner warning within 50m */}
-          {duplicateToilet && !dismissedDuplicate && (
-            <div className="bg-brand-yellowLight border border-brand-yellow/30 text-text-primary p-3 rounded-xl text-xs font-semibold flex flex-col gap-2 animate-fade-in">
-              <div className="flex items-start gap-2">
-                <span className="text-base">⚠️</span>
-                <div className="flex flex-col">
-                  <span>A toilet was already added nearby.</span>
-                  <span className="text-text-secondary font-medium">({duplicateToilet.name})</span>
+            {duplicateToilet && !dismissedDuplicate && (
+              <div className="bg-[#FFF4E6] border border-[#E67700]/30 text-[#B85C00] p-3 rounded-lg text-xs font-semibold flex flex-col gap-2 animate-fadeIn">
+                <div className="flex items-start gap-2">
+                  <span className="text-base">⚠️</span>
+                  <div className="flex flex-col text-left">
+                    <span>A toilet was already added nearby.</span>
+                    <span className="text-[#6B6B6B] font-medium">({duplicateToilet.name})</span>
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end mt-1">
+                  <Link href={`/toilet/${duplicateToilet.id}`} target="_blank" className="bg-[#E67700] hover:bg-[#B85C00] text-white px-3 py-1.5 rounded-lg font-medium text-center transition-colors">
+                    View existing
+                  </Link>
+                  <button type="button" onClick={() => setDismissedDuplicate(true)} className="bg-white px-3 py-1.5 rounded-lg border border-[#E9E9E7] text-[#6B6B6B] font-medium transition-colors hover:bg-[#EFEEEB]">
+                    Continue
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2 justify-end mt-1">
-                <Link href={`/toilet/${duplicateToilet.id}`} target="_blank" className="bg-brand-yellow text-text-inverse px-3 py-1.5 rounded-lg font-bold text-center">
-                  View existing toilet
-                </Link>
-                <button type="button" onClick={() => setDismissedDuplicate(true)} className="bg-surface-card dark:bg-dark-card px-3 py-1.5 rounded-lg border border-surface-border dark:border-dark-border text-text-secondary font-bold">
-                  Continue adding
-                </button>
-              </div>
+            )}
+
+            <button
+              onClick={handleNext}
+              className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-all shadow-button mt-4 ${nextBtnShake ? "animate-shake" : ""}`}
+            >
+              Confirm Location
+            </button>
+          </div>
+        )}
+
+        {/* STEP 2: Name, Address and Category selection */}
+        {step === 2 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">Restroom Name</label>
+              <input
+                type="text"
+                placeholder="e.g. Kozhikode Beach Public Toilet"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+              />
             </div>
-          )}
 
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={handleNext}
-            className={nextBtnShake ? "animate-shake" : ""}
-          >
-            Confirm Location
-          </Button>
-        </div>
-      )}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">Address / Area Name</label>
+              <input
+                type="text"
+                placeholder="e.g. Beach Road (Near Main Walkway)"
+                value={locationName}
+                onChange={(e) => setLocationName(e.target.value)}
+                className="w-full h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+              />
+            </div>
 
-      {/* STEP 2: Name, Address and Category selection */}
-      {step === 2 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Restroom Name</label>
-            <input
-              type="text"
-              placeholder="e.g. Kozhikode Beach Public Toilet"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-12 border border-surface-border dark:border-dark-border bg-surface-card dark:bg-dark-card rounded-xl px-4 text-sm font-medium focus:outline-none focus:border-brand-green transition"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Address / Area Name</label>
-            <input
-              type="text"
-              placeholder="e.g. Beach Road (Near Main Walkway)"
-              value={locationName}
-              onChange={(e) => setLocationName(e.target.value)}
-              className="h-12 border border-surface-border dark:border-dark-border bg-surface-card dark:bg-dark-card rounded-xl px-4 text-sm font-medium focus:outline-none focus:border-brand-green transition"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Bathroom Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="h-12 border border-surface-border dark:border-dark-border bg-surface-card dark:bg-dark-card rounded-xl px-4 text-sm font-medium focus:outline-none focus:border-brand-green transition"
-            >
-              <option value="Public Toilet">Public Toilet</option>
-              <option value="Petrol Pump">Petrol Pump</option>
-              <option value="Restaurant">Restaurant</option>
-              <option value="Mall">Mall</option>
-              <option value="Railway / Bus Station">Railway / Bus Station</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div className="flex gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev}>
-              Back
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleNext} className={nextBtnShake ? "animate-shake" : ""}>
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Gender Access */}
-      {step === 3 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Gender Access</label>
-          <p className="text-xs text-text-secondary leading-relaxed -mt-2">Who is allowed to access this toilet?</p>
-
-          <div className="flex flex-col gap-2">
-            {["Men", "Women", "Unisex", "Both"].map((access) => (
-              <button
-                key={access}
-                type="button"
-                onClick={() => setGenderAccess(access)}
-                className={`w-full min-h-[48px] px-4 rounded-xl border text-sm font-semibold transition text-left flex items-center justify-between ${
-                  genderAccess === access
-                    ? "bg-brand-greenLight border-brand-green text-brand-green dark:bg-brand-green/20 dark:text-text-inverse"
-                    : "bg-surface-card dark:bg-dark-card border-surface-border dark:border-dark-border text-text-primary dark:text-text-inverse"
-                }`}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">Bathroom Type</label>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
               >
-                <span>{access}</span>
-                {genderAccess === access && <span className="text-base">✓</span>}
-              </button>
-            ))}
-          </div>
+                <option value="Public Toilet">Public Toilet</option>
+                <option value="Petrol Pump">Petrol Pump</option>
+                <option value="Restaurant">Restaurant</option>
+                <option value="Mall">Mall</option>
+                <option value="Railway / Bus Station">Railway / Bus Station</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
 
-          <div className="flex gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev}>
-              Back
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleNext} className={nextBtnShake ? "animate-shake" : ""}>
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 4: Toilet Style */}
-      {step === 4 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Toilet Style</label>
-          <p className="text-xs text-text-secondary leading-relaxed -mt-2">What physical toilet type is installed?</p>
-
-          <div className="flex flex-col gap-2">
-            {["Indian", "European", "Both"].map((style) => (
+            <div className="flex gap-3 mt-4">
               <button
-                key={style}
                 type="button"
-                onClick={() => setToiletType(style)}
-                className={`w-full min-h-[48px] px-4 rounded-xl border text-sm font-semibold transition text-left flex items-center justify-between ${
-                  toiletType === style
-                    ? "bg-brand-greenLight border-brand-green text-brand-green dark:bg-brand-green/20 dark:text-text-inverse"
-                    : "bg-surface-card dark:bg-dark-card border-surface-border dark:border-dark-border text-text-primary dark:text-text-inverse"
-                }`}
+                onClick={handlePrev}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
               >
-                <span>{style}</span>
-                {toiletType === style && <span className="text-base">✓</span>}
+                Back
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={handleNext}
+                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Next
+              </button>
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev}>
-              Back
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleNext} className={nextBtnShake ? "animate-shake" : ""}>
-              Next
-            </Button>
+        {/* STEP 3: Gender Access */}
+        {step === 3 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Who is allowed to access this toilet?</p>
+
+            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+              {["Men", "Women", "Unisex", "Both"].map((access) => (
+                <button
+                  key={access}
+                  type="button"
+                  onClick={() => setGenderAccess(access)}
+                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
+                    genderAccess === access ? "bg-[#EBFBEE]" : "bg-white"
+                  }`}
+                >
+                  <div 
+                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                      genderAccess === access ? "border-[#2F9E44] bg-[#2F9E44]" : "border-[#D3D3CF] bg-white"
+                    }`}
+                  >
+                    {genderAccess === access && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-[14px] text-[#191919] font-normal">{access}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Next
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* STEP 5: Accessibility selection (Yes/No explicitly) */}
-      {step === 5 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Wheelchair Accessibility ♿</label>
-          <p className="text-xs text-text-secondary leading-relaxed -mt-2">Is there step-free access, wide doors, or grab rails?</p>
+        {/* STEP 4: Toilet Style */}
+        {step === 4 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">What physical toilet type is installed?</p>
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setAccessibilityAnswer("yes");
-                setIsAccessible(true);
-              }}
-              className={`flex-1 min-h-[80px] rounded-2xl border text-sm font-bold transition flex flex-col items-center justify-center gap-1 ${
-                accessibilityAnswer === "yes"
-                  ? "bg-brand-greenLight border-brand-green text-brand-green dark:bg-brand-green/20 dark:text-text-inverse"
-                  : "bg-surface-card dark:bg-dark-card border-surface-border dark:border-dark-border text-text-primary dark:text-text-inverse"
-              }`}
-            >
-              <span className="text-2xl">♿</span>
-              <span>Yes, Accessible</span>
-            </button>
+            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+              {["Indian", "European", "Both"].map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  onClick={() => setToiletType(style)}
+                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
+                    toiletType === style ? "bg-[#EBFBEE]" : "bg-white"
+                  }`}
+                >
+                  <div 
+                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                      toiletType === style ? "border-[#2F9E44] bg-[#2F9E44]" : "border-[#D3D3CF] bg-white"
+                    }`}
+                  >
+                    {toiletType === style && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-[14px] text-[#191919] font-normal">{style}</span>
+                </button>
+              ))}
+            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setAccessibilityAnswer("no");
-                setIsAccessible(false);
-              }}
-              className={`flex-1 min-h-[80px] rounded-2xl border text-sm font-bold transition flex flex-col items-center justify-center gap-1 ${
-                accessibilityAnswer === "no"
-                  ? "bg-brand-redLight border-brand-red text-brand-red dark:bg-brand-red/20 dark:text-text-inverse"
-                  : "bg-surface-card dark:bg-dark-card border-surface-border dark:border-dark-border text-text-primary dark:text-text-inverse"
-              }`}
-            >
-              <span className="text-2xl">❌</span>
-              <span>No / Unsure</span>
-            </button>
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Next
+              </button>
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev}>
-              Back
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleNext} className={nextBtnShake ? "animate-shake" : ""}>
-              Next
-            </Button>
+        {/* STEP 5: Accessibility */}
+        {step === 5 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Is there step-free access, wide doors, or grab rails?</p>
+
+            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+              {[
+                { key: "yes", val: true, label: "Yes, Wheelchair Accessible ♿" },
+                { key: "no", val: false, label: "No / Unsure" }
+              ].map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => {
+                    setAccessibilityAnswer(opt.key as "yes" | "no");
+                    setIsAccessible(opt.val);
+                  }}
+                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
+                    accessibilityAnswer === opt.key ? "bg-[#EBFBEE]" : "bg-white"
+                  }`}
+                >
+                  <div 
+                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                      accessibilityAnswer === opt.key ? "border-[#2F9E44] bg-[#2F9E44]" : "border-[#D3D3CF] bg-white"
+                    }`}
+                  >
+                    {accessibilityAnswer === opt.key && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-[14px] text-[#191919] font-normal">{opt.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Next
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* STEP 6: Star Ratings (Cleanliness, Smell, Lighting, Safety, Water) */}
-      {step === 6 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Restroom Quality Ratings</label>
-          <p className="text-xs text-text-secondary leading-relaxed -mt-2">Rate each category (minimum 1 star required for each).</p>
+        {/* STEP 6: Star Ratings */}
+        {step === 6 && (
+          <div className="flex-1 flex flex-col gap-6">
+            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Rate each category (minimum 1 star required for each).</p>
 
-          <div className="space-y-4">
-            {renderStarSelector("Cleanliness", cleanliness, setCleanliness)}
-            {renderStarSelector("Smell Level", smell, setSmell)}
-            {renderStarSelector("Lighting", lighting, setLighting)}
-            {renderStarSelector("Women Safety", womenSafety, setWomenSafety)}
-            {renderStarSelector("Water Supply", waterAvailability, setWaterAvailability)}
+            <div className="space-y-6">
+              {renderStarSelector("Cleanliness", cleanliness, setCleanliness)}
+              {renderStarSelector("Smell Level", smell, setSmell)}
+              {renderStarSelector("Lighting", lighting, setLighting)}
+              {renderStarSelector("Women Safety", womenSafety, setWomenSafety)}
+              {renderStarSelector("Water Supply", waterAvailability, setWaterAvailability)}
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Next
+              </button>
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev}>
-              Back
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleNext} className={nextBtnShake ? "animate-shake" : ""}>
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
+        {/* STEP 7: Amenities Checklist */}
+        {step === 7 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Select all facilities present inside the restroom.</p>
 
-      {/* STEP 7: Amenities checklist */}
-      {step === 7 && (
-        <div className="flex-1 flex flex-col gap-4">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Amenities Available (Optional)</label>
-          <p className="text-xs text-text-secondary leading-relaxed -mt-2">Select all facilities present inside the restroom.</p>
-
-          <div className="bg-surface-muted dark:bg-dark-muted rounded-xl p-3 border border-surface-border dark:border-dark-border space-y-2">
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none min-h-[44px]">
+            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+              <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
                 <input
                   type="checkbox"
                   checked={hasSoap}
                   onChange={(e) => setHasSoap(e.target.checked)}
-                  className="w-5 h-5 rounded border-surface-border text-brand-green focus:ring-brand-green/20"
+                  className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
                 />
-                Soap Available
+                <span className="text-[14px] font-normal text-[#191919]">Soap Available</span>
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none min-h-[44px]">
+              <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
                 <input
                   type="checkbox"
                   checked={hasMirror}
                   onChange={(e) => setHasMirror(e.target.checked)}
-                  className="w-5 h-5 rounded border-surface-border text-brand-green focus:ring-brand-green/20"
+                  className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
                 />
-                Mirror Installed
+                <span className="text-[14px] font-normal text-[#191919]">Mirror Installed</span>
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none min-h-[44px]">
+              <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
                 <input
                   type="checkbox"
                   checked={hasSanRoot}
                   onChange={(e) => setHasSanRoot(e.target.checked)}
-                  className="w-5 h-5 rounded border-surface-border text-brand-green focus:ring-brand-green/20"
+                  className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
                 />
-                Sanitary Pad Disposal Box
+                <span className="text-[14px] font-normal text-[#191919]">Sanitary Pad Disposal Box</span>
               </label>
             </div>
-          </div>
 
-          <div className="flex gap-3 mt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev}>
-              Back
-            </Button>
-            <Button variant="primary" fullWidth onClick={handleNext}>
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 8: Photo upload & submission */}
-      {step === 8 && (
-        <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col gap-4">
-          <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Restroom Picture (Optional)</label>
-          <p className="text-xs text-text-secondary leading-relaxed -mt-2">Provide a clear photo to help others locate this toilet.</p>
-
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhotoChange}
-            id="add-toilet-file"
-            className="hidden"
-            disabled={loading}
-          />
-          
-          {photoPreview ? (
-            <div className="relative w-full h-40 rounded-xl bg-surface-muted dark:bg-dark-muted overflow-hidden border border-surface-border dark:border-dark-border flex items-center justify-center">
-              <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+            <div className="flex gap-3 mt-4">
               <button
                 type="button"
-                onClick={() => {
-                  setPhoto(null);
-                  setPhotoPreview(null);
-                }}
-                disabled={loading}
-                className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-2 hover:bg-black active:scale-90 transition min-h-[44px] min-w-[44px] flex items-center justify-center font-bold"
+                onClick={handlePrev}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
               >
-                ✕
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button"
+              >
+                Next
               </button>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => document.getElementById("add-toilet-file")?.click()}
+          </div>
+        )}
+
+        {/* STEP 8: Photo upload */}
+        {step === 8 && (
+          <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col gap-4">
+            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Provide a clear photo to help others locate this toilet.</p>
+
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoChange}
+              id="add-toilet-file"
+              className="hidden"
               disabled={loading}
-              className="w-full h-28 border-2 border-dashed border-surface-border dark:border-dark-border hover:border-brand-green rounded-xl flex flex-col items-center justify-center gap-1.5 text-text-secondary active:scale-[0.98] transition min-h-[44px]"
-            >
-              <span className="text-2xl">📸</span>
-              <span className="text-xs font-semibold">Tap to Take / Select Photo</span>
-            </button>
-          )}
-
-          {/* Simple Progress Bar (no text percentage) */}
-          {uploadProgress > 0 && (
-            <div className="w-full bg-surface-muted dark:bg-dark-muted border border-surface-border dark:border-dark-border rounded-full h-2.5 overflow-hidden mt-2">
-              <div
-                className="bg-brand-green h-2.5 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-            </div>
-          )}
-
-          <div className="flex gap-3 pt-4">
-            <Button variant="secondary" fullWidth onClick={handlePrev} disabled={loading}>
-              Back
-            </Button>
-
-            {!photo ? (
-              <Button
-                variant="primary"
-                fullWidth
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Submitting...
-                  </span>
-                ) : submitDone ? (
-                  "Done!"
-                ) : (
-                  "Skip & Submit"
-                )}
-              </Button>
+            />
+            
+            {photoPreview ? (
+              <div className="relative w-full h-40 rounded-lg bg-[#F7F7F5] overflow-hidden border border-[#E9E9E7] flex items-center justify-center">
+                <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhoto(null);
+                    setPhotoPreview(null);
+                  }}
+                  disabled={loading}
+                  className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             ) : (
-              <Button
-                variant="primary"
-                fullWidth
+              <button
+                type="button"
+                onClick={() => document.getElementById("add-toilet-file")?.click()}
+                disabled={loading}
+                className="w-full h-28 border-2 border-dashed border-[#E9E9E7] hover:border-[#2F9E44] rounded-lg flex flex-col items-center justify-center gap-1.5 text-[#6B6B6B] hover:bg-[#F7F7F5] transition-all min-h-[44px]"
+              >
+                <span className="text-2xl">📸</span>
+                <span className="text-xs font-semibold">Tap to Take / Select Photo</span>
+              </button>
+            )}
+
+            {/* Notion thin progress bar */}
+            {uploadProgress > 0 && (
+              <div className="w-full bg-[#E9E9E7] h-[2px] overflow-hidden mt-2">
+                <div
+                  className="bg-[#2F9E44] h-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={loading}
+                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors disabled:opacity-50"
+              >
+                Back
+              </button>
+
+              <button
                 type="submit"
                 disabled={loading}
+                className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -909,46 +949,36 @@ export default function AddToiletPage() {
                   </span>
                 ) : submitDone ? (
                   "Done!"
+                ) : !photo ? (
+                  "Skip & Submit"
                 ) : (
                   "Submit Toilet"
                 )}
-              </Button>
-            )}
-          </div>
-        </form>
-      )}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
       {/* Privacy processing Overlay */}
       {privacyStatus && (
-        <div className="fixed inset-0 z-[60] bg-surface-card/95 dark:bg-dark-card/95 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+        <div className="fixed inset-0 z-[120] bg-white/95 flex flex-col items-center justify-center p-6 text-center animate-fadeIn">
           <div className="relative w-16 h-16 flex items-center justify-center mb-4">
-            <div className="absolute inset-0 bg-brand-sky/15 rounded-full animate-ping"></div>
-            <div className="w-12 h-12 bg-brand-sky rounded-full flex items-center justify-center text-white shadow-lg">
+            <div className="absolute inset-0 bg-[#2F9E44]/10 rounded-full animate-ping"></div>
+            <div className="w-12 h-12 bg-[#2F9E44] rounded-full flex items-center justify-center text-white shadow-lg">
               🔒
             </div>
           </div>
-          <h3 className="font-bold text-text-primary dark:text-text-inverse text-sm">
+          <h3 className="font-semibold text-[#191919] text-sm">
             {privacyStatus === "compressing" && "Compressing Photo..."}
             {privacyStatus === "scrubbing" && "Scrubbing GPS metadata tags..."}
             {privacyStatus === "securing" && "Uploading to vault..."}
           </h3>
-          <p className="text-xs text-text-secondary mt-1 max-w-xs">
+          <p className="text-xs text-[#6B6B6B] mt-1.5 max-w-xs leading-relaxed">
             SafeToilets strips camera metadata tags to keep your upload private.
           </p>
         </div>
       )}
-
-      {/* Tailwind colors CSS variables mock style to ensure buttons inside map elements look correct */}
-      <style jsx global>{`
-        :root {
-          --btn-bg: #FFFFFF;
-        }
-        @media (prefers-color-scheme: dark) {
-          :root {
-            --btn-bg: #292524;
-          }
-        }
-      `}</style>
 
     </div>
   );

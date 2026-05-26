@@ -11,17 +11,25 @@ import FilterPills from "@/components/ui/FilterPills";
 import ToiletCard from "@/components/toilet/ToiletCard";
 import SkeletonCard from "@/components/ui/SkeletonCard";
 import MapSkeleton from "@/components/Map/MapSkeleton";
-import Button from "@/components/ui/Button";
 import { Restroom } from "@/types";
 
-// Dynamic map view to prevent Leaflet SSR errors (Section 3c)
+// Dynamic map view to prevent Leaflet SSR errors
 const MapView = dynamic(() => import("@/components/Map/MapView"), {
   ssr: false,
   loading: () => <MapSkeleton />,
 });
 
+function getInitials(name?: string | null): string {
+  if (!name) return "U";
+  const parts = name.trim().split(" ");
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return parts[0][0].toUpperCase();
+}
+
 export default function HomePage() {
-  const { isAuthenticated, loading: authLoading, loginWithGoogle, logout } = useSupabase();
+  const { isAuthenticated, loading: authLoading, profile, logout } = useSupabase();
   const { latitude, longitude, error: geoError, loading: geoLoading, getPosition, setState: setGeoState } = useLocation();
 
   const [filter, setFilter] = useState("all");
@@ -30,7 +38,7 @@ export default function HomePage() {
   const [selectedToilet, setSelectedToilet] = useState<Restroom | null>(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
 
-  // Auto trigger location check on startup if permission previously granted (Section 2a)
+  // Auto trigger location check on startup if permission previously granted
   useEffect(() => {
     if (typeof window !== "undefined") {
       if (navigator.permissions && navigator.permissions.query) {
@@ -57,10 +65,10 @@ export default function HomePage() {
     }
   }, [getPosition]);
 
-  // Fetch toilets within current map bounds + 500m buffer using SWR (Section 9b / 9c)
+  // Fetch toilets within current map bounds using SWR
   const { toilets, isLoading: toiletsLoading, error: toiletsError, mutate } = useNearbyToilets(mapBounds, filter);
 
-  // Compute distances relative to user geolocation coords
+  // Compute distances relative to user coords
   const getSortedToilets = () => {
     if (!latitude || !longitude) return toilets;
     return [...toilets].sort((a, b) => {
@@ -74,47 +82,61 @@ export default function HomePage() {
   const userCoords = latitude && longitude ? { latitude, longitude } : null;
 
   return (
-    <div className="min-h-screen bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse flex flex-col relative overflow-x-hidden">
+    <div className="min-h-screen bg-white text-[#191919] flex flex-col relative overflow-x-hidden animate-fadeIn">
       
-      {/* 1. Header Bar (Section 4) */}
-      <header className="h-[56px] sticky top-0 z-50 bg-surface-card dark:bg-dark-card border-b border-surface-border dark:border-dark-border px-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-brand-green font-bold text-xl tracking-tight">ST</span>
-          <span className="text-xs font-semibold text-text-secondary bg-brand-greenLight text-brand-green dark:bg-brand-green/20 px-1.5 py-0.5 rounded-md uppercase">
-            Kerala
-          </span>
+      {/* Header Bar */}
+      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-white/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-[#E9E9E7]/80">
+        <div className="flex items-center">
+          <Link href="/" className="text-[15px] font-semibold text-[#191919] tracking-tight">
+            SafeToilets
+          </Link>
         </div>
 
-        <div className="flex items-center gap-2 min-h-[36px]">
+        <div className="flex items-center gap-3 min-h-[32px]">
           {authLoading ? (
-            <div className="w-16 h-8 rounded-full bg-surface-muted dark:bg-dark-muted animate-pulse" />
+            <div className="w-7 h-7 rounded-full bg-[#F5F5F4] animate-pulse" />
           ) : isAuthenticated ? (
-            <Button variant="ghost" className="h-9 px-3 text-xs" onClick={logout}>
-              Logout
-            </Button>
+            <div className="flex items-center gap-2.5">
+              <Link
+                href="/profile"
+                className="w-7 h-7 rounded-full bg-[#EBFBEE] text-[#1E6E2E] text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-[#d3f9d8]"
+              >
+                {getInitials(profile?.full_name)}
+              </Link>
+              <button
+                onClick={logout}
+                className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           ) : (
-            <Button variant="ghost" className="h-9 px-3 text-xs" onClick={loginWithGoogle}>
-              Login
-            </Button>
+            <Link
+              href="/login"
+              className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium transition-colors"
+            >
+              Sign in
+            </Link>
           )}
+
           <Link href="/add">
-            <Button className="h-9 px-4 bg-brand-green text-text-inverse text-xs rounded-full font-semibold">
-              Add Toilet
-            </Button>
+            <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium h-[32px] px-3 rounded-lg shadow-button transition-colors active:scale-[0.97]">
+              + Add
+            </button>
           </Link>
         </div>
       </header>
 
-      {/* 2. Geolocation Access Denied Banner (Section 8f) */}
+      {/* Geolocation Access Denied Banner */}
       {geoError && (
-        <div className="mx-4 my-3 bg-brand-yellowLight text-text-primary border border-brand-yellow/30 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm animate-fade-in">
+        <div className="mx-4 my-3 bg-[#FFF4E6] text-[#B85C00] border border-[#E67700]/30 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm animate-fadeIn">
           <div className="flex items-start gap-2.5">
             <span className="text-xl">📍</span>
             <div className="flex flex-col">
-              <span className="text-sm font-bold">
+              <span className="text-sm font-semibold">
                 {geoError.toLowerCase().includes("denied") ? "Location access was denied." : "Location access issue"}
               </span>
-              <span className="text-xs text-text-secondary mt-0.5">{geoError}</span>
+              <span className="text-xs text-[#6B6B6B] mt-0.5">{geoError}</span>
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -124,24 +146,24 @@ export default function HomePage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button className="h-10 px-4 bg-brand-yellow text-text-inverse text-xs rounded-xl font-bold active:scale-95">
+                <button className="bg-[#E67700] hover:bg-[#B85C00] text-white text-xs font-semibold rounded-lg px-4 py-2 transition-colors active:scale-95">
                   Open Settings to Enable
-                </Button>
+                </button>
               </a>
             ) : (
-              <Button
+              <button
                 onClick={getPosition}
-                className="h-10 px-4 bg-brand-yellow text-text-inverse text-xs rounded-xl font-bold active:scale-95"
+                className="bg-[#E67700] hover:bg-[#B85C00] text-white text-xs font-semibold rounded-lg px-4 py-2 transition-colors active:scale-95"
               >
                 Retry GPS
-              </Button>
+              </button>
             )}
-            <Button
+            <button
               onClick={() => setGeoState((prev) => ({ ...prev, error: null }))}
-              className="h-10 px-4 bg-surface-muted text-text-secondary border border-surface-border text-xs rounded-xl font-bold active:scale-95 dark:bg-dark-muted dark:border-dark-border"
+              className="bg-white hover:bg-[#F7F7F5] text-[#B85C00] border border-[#E9E9E7] text-xs font-semibold rounded-lg px-4 py-2 transition-colors"
             >
               Browse All Toilets in Kerala
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -149,28 +171,28 @@ export default function HomePage() {
       {/* Main content grid */}
       <main className="flex-1 flex flex-col sm:flex-row">
         
-        {/* Map Container (Section 4) */}
+        {/* Map Container */}
         <section 
           className={`w-full sm:w-1/2 flex-shrink-0 ${
             mobileView === "list" ? "hidden sm:block" : "block"
           }`}
         >
-          <div className="h-[55vh] min-h-[300px] w-full rounded-b-2xl overflow-hidden border-b border-surface-border dark:border-dark-border relative">
+          <div className="h-[52vh] w-full rounded-b-[20px] overflow-hidden border-b border-[#E9E9E7] relative">
             <MapView
               toilets={toilets}
               selectedToilet={selectedToilet}
               onSelectToilet={(toilet) => {
                 setSelectedToilet(toilet);
-                setMobileView("list"); // Auto shift on selection to card
+                setMobileView("list");
               }}
               userCoords={userCoords}
               isAddingMode={false}
               onBoundsChange={(bounds) => setMapBounds(bounds)}
             />
             {geoLoading && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-surface-card/90 dark:bg-dark-card/90 px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-md border border-surface-border dark:border-dark-border animate-pulse">
-                <div className="w-2.5 h-2.5 bg-brand-sky rounded-full animate-ping" />
-                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">Locating Device...</span>
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-white/95 px-3 py-1 rounded-full flex items-center gap-2 shadow-sm border border-[#E9E9E7] animate-pulse">
+                <div className="w-2 h-2 bg-[#2F9E44] rounded-full animate-ping" />
+                <span className="text-[10px] font-medium text-[#6B6B6B] uppercase tracking-wider">Locating...</span>
               </div>
             )}
           </div>
@@ -182,117 +204,125 @@ export default function HomePage() {
             mobileView === "map" ? "hidden sm:block" : "block"
           }`}
         >
-          {/* 3. Filter Bar */}
+          {/* Filter Bar */}
           <FilterPills activeFilter={filter} onChange={setFilter} />
 
-          {/* 4. List Header */}
-          <div className="px-4 py-3 flex items-center justify-between border-b border-surface-border dark:border-dark-border">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-text-secondary">
-                {toiletsLoading ? "Scanning..." : `${sortedToilets.length} toilets nearby`}
-              </span>
-              <button
-                onClick={() => mutate()}
-                disabled={toiletsLoading}
-                className="p-1 rounded-lg text-text-secondary hover:text-text-primary dark:hover:text-text-inverse hover:bg-surface-muted dark:hover:bg-dark-muted active:scale-90 transition disabled:opacity-50"
-                title="Refresh listings"
-              >
-                <svg className={`w-4 h-4 ${toiletsLoading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3" />
-                </svg>
-              </button>
+          {/* List Header */}
+          <div className="px-4 pt-6 pb-2 flex justify-between items-center bg-white flex-shrink-0">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+              <span>Nearby</span>
+              <span className="text-[#D3D3CF] font-normal">·</span>
+              <span className="font-mono font-normal tracking-normal lowercase">{toiletsLoading ? "scanning..." : `${sortedToilets.length} found`}</span>
             </div>
             
-            {/* List/Map toggle (Section 4) */}
-            <div className="flex bg-surface-muted dark:bg-dark-muted p-0.5 rounded-lg border border-surface-border dark:border-dark-border">
+            <div className="flex items-center gap-3">
               <button 
-                onClick={() => setMobileView("map")} 
-                className={`px-3 py-1 text-xs font-bold rounded-md min-w-[44px] transition ${
-                  mobileView === "map" ? "bg-brand-green text-text-inverse shadow-sm" : "text-text-secondary hover:text-text-primary dark:hover:text-text-inverse"
-                }`}
+                onClick={() => mutate()}
+                disabled={toiletsLoading}
+                className="text-[13px] text-[#6B6B6B] flex items-center gap-1 hover:text-[#191919] transition-colors disabled:opacity-50"
               >
-                Map
+                <span>Closest</span>
+                <svg className={`w-3.5 h-3.5 text-current ${toiletsLoading ? "animate-spin" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
               </button>
-              <button 
-                onClick={() => setMobileView("list")} 
-                className={`px-3 py-1 text-xs font-bold rounded-md min-w-[44px] transition ${
-                  mobileView === "list" ? "bg-brand-green text-text-inverse shadow-sm" : "text-text-secondary hover:text-text-primary dark:hover:text-text-inverse"
-                }`}
-              >
-                List
-              </button>
-              <button 
-                onClick={() => setMobileView("both")} 
-                className={`hidden sm:block px-3 py-1 text-xs font-bold rounded-md min-w-[44px] transition ${
-                  mobileView === "both" ? "bg-brand-green text-text-inverse shadow-sm" : "text-text-secondary hover:text-text-primary dark:hover:text-text-inverse"
-                }`}
-              >
-                Both
-              </button>
+
+              {/* List/Map toggle */}
+              <div className="flex bg-[#F7F7F5] p-0.5 rounded-lg border border-[#E9E9E7]">
+                <button 
+                  onClick={() => setMobileView("map")} 
+                  className={`px-2 py-0.5 text-xs font-medium rounded transition ${
+                    mobileView === "map" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
+                  }`}
+                >
+                  Map
+                </button>
+                <button 
+                  onClick={() => setMobileView("list")} 
+                  className={`px-2 py-0.5 text-xs font-medium rounded transition ${
+                    mobileView === "list" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
+                  }`}
+                >
+                  List
+                </button>
+                <button 
+                  onClick={() => setMobileView("both")} 
+                  className={`hidden sm:block px-2 py-0.5 text-xs font-medium rounded transition ${
+                    mobileView === "both" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
+                  }`}
+                >
+                  Both
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* 5. Toilet list items container */}
+          {/* Toilet list items container */}
           <div 
-            className="overflow-y-auto page-scroll p-4 space-y-3 pb-[env(safe-area-inset-bottom)] no-scrollbar"
-            style={{ height: "calc(100dvh - 56px - 55vh - 44px)" }}
+            className="overflow-y-auto pb-8 no-scrollbar bg-white"
+            style={{ height: "calc(100dvh - 52px - 52vh - 44px)" }}
           >
             {toiletsError ? (
-              <div className="py-6 px-4 bg-brand-redLight text-brand-red rounded-xl text-xs font-semibold flex flex-col gap-2 items-center text-center">
-                <span>Couldn&apos;t load data. Check your connection.</span>
-                <Button onClick={() => mutate()} variant="outline" className="h-8 px-4 text-[10px]">
+              <div className="mx-4 my-2 py-3 px-4 bg-[#FFF0F0] border border-[#E03131]/30 rounded-xl flex items-center gap-2">
+                <span className="text-[#C21010] text-xs flex-1">
+                  Couldn&apos;t load. Check connection.
+                </span>
+                <button 
+                  className="text-[#1971C2] text-xs font-medium px-2.5 py-1 rounded hover:bg-[#EFEEEB]"
+                  onClick={() => mutate()}
+                >
                   Retry
-                </Button>
+                </button>
               </div>
             ) : toiletsLoading ? (
-              <>
+              <div className="px-4 space-y-3">
                 <SkeletonCard />
                 <SkeletonCard />
                 <SkeletonCard />
-              </>
+              </div>
             ) : sortedToilets.length === 0 ? (
-              /* Empty State (Section 4) */
-              <div className="py-12 flex flex-col items-center text-center max-w-xs mx-auto animate-fade-in">
-                <svg className="w-16 h-16 text-text-disabled dark:text-text-secondary mb-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <h4 className="text-base font-bold text-text-primary dark:text-text-inverse">No toilets mapped here yet</h4>
-                <p className="text-xs text-text-secondary mt-1">Be the first to help your community by registering a restroom.</p>
-                <Link href="/add" className="w-full mt-6">
-                  <Button variant="primary" fullWidth className="rounded-xl">
-                    Add a Toilet
-                  </Button>
+              /* Empty State (Notion style) */
+              <div className="py-16 flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono">
+                  ?
+                </div>
+                <h3 className="text-base font-medium text-[#191919]">No toilets here yet</h3>
+                <p className="text-sm text-[#6B6B6B] text-center max-w-[200px] leading-relaxed">
+                  Add the first one and help your community.
+                </p>
+                <Link href="/add" className="mt-2">
+                  <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors active:scale-[0.97]">
+                    + Add toilet
+                  </button>
                 </Link>
               </div>
             ) : (
-              sortedToilets.map((toilet) => (
-                <ToiletCard
-                  key={toilet.id}
-                  toilet={toilet}
-                  distance={userCoords ? calculateDistance(userCoords.latitude, userCoords.longitude, toilet.latitude, toilet.longitude) : null}
-                />
-              ))
+              <div className="bg-[#F7F7F5] rounded-2xl overflow-hidden border border-[#E9E9E7] mx-4 flex flex-col divide-y divide-[#E9E9E7]">
+                {sortedToilets.map((toilet) => (
+                  <ToiletCard
+                    key={toilet.id}
+                    toilet={toilet}
+                    distance={userCoords ? calculateDistance(userCoords.latitude, userCoords.longitude, toilet.latitude, toilet.longitude) : null}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </section>
 
       </main>
 
-      {/* Geolocation Permission Onboarding Modal (Section 2a) */}
+      {/* Geolocation Permission Onboarding Modal */}
       {showLocationPrompt && (
-        <div className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-card dark:bg-dark-card w-full max-w-sm rounded-2xl p-6 border border-surface-border dark:border-dark-border shadow-2xl flex flex-col gap-4 text-center animate-fade-in">
-            <div className="w-12 h-12 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center text-xl mx-auto">
-              📍
-            </div>
-            <h3 className="font-bold text-text-primary dark:text-text-inverse text-lg">Location Access</h3>
-            <p className="text-xs text-text-secondary leading-relaxed">
-              SafeToilets needs your location to find nearby toilets.
+        <div className="fixed inset-0 z-[120] bg-black/5 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-xl p-6 border border-[#E9E9E7] shadow-lg flex flex-col gap-4 text-left animate-fadeIn">
+            <h3 className="text-[18px] font-semibold text-[#191919]">Location Access</h3>
+            <p className="text-[14px] text-[#6B6B6B] leading-relaxed">
+              SafeToilets needs your location to find nearby toilets. Allow browser permission to continue.
             </p>
             <div className="flex flex-col gap-2 mt-2">
-              <Button
-                variant="primary"
-                fullWidth
+              <button
+                className="w-full h-[40px] bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium rounded-lg transition-colors"
                 onClick={() => {
                   if (typeof window !== "undefined") {
                     localStorage.setItem("geolocation_allowed", "true");
@@ -302,16 +332,15 @@ export default function HomePage() {
                 }}
               >
                 Allow Location Access
-              </Button>
-              <Button
-                variant="ghost"
-                fullWidth
+              </button>
+              <button
+                className="w-full h-[40px] bg-transparent border border-[#E9E9E7] hover:bg-[#EFEEEB] text-[#6B6B6B] text-[14px] font-medium rounded-lg transition-colors"
                 onClick={() => {
                   setShowLocationPrompt(false);
                 }}
               >
                 Browse Without Location
-              </Button>
+              </button>
             </div>
           </div>
         </div>
