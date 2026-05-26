@@ -2,8 +2,16 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html lang="en">
+    <Html lang="en-IN">
       <Head>
+        {/* Open Graph / Social sharing preview */}
+        <meta property="og:title" content="SafeToilets Kerala" />
+        <meta property="og:description" content="Find clean public toilets near you in Kerala" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://safetoilets.pages.dev" />
+        <meta property="og:image" content="https://safetoilets.pages.dev/og-image.png" />
+        <meta name="twitter:card" content="summary" />
+
         {/* PWA Meta Tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -16,7 +24,7 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
 

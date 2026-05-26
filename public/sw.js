@@ -4,6 +4,7 @@ const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/offline.html',
   '/placeholder.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
@@ -77,7 +78,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => {
         // Fallback for document pages when offline
         if (event.request.mode === 'navigate') {
-          return caches.match('/');
+          return caches.match('/offline.html');
         }
       });
     })

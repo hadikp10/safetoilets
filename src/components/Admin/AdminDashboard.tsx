@@ -255,7 +255,13 @@ export default function AdminDashboard({ currentProfile }: AdminDashboardProps) 
                             Reason: {report.reason.replace("_", " ")}
                           </span>
                           <h3 className="font-bold text-base mt-2 text-stone-900 dark:text-stone-50">
-                            Toilet: {relatedRestroom?.name || "Deleted Restroom"}
+                            Toilet: {relatedRestroom ? (
+                              <Link href={`/toilet/${relatedRestroom.id}`} className="text-brand-green hover:underline">
+                                {relatedRestroom.name}
+                              </Link>
+                            ) : (
+                              "Deleted Restroom"
+                            )}
                           </h3>
                           <p className="text-xs text-stone-500 mt-0.5">
                             Reported on: {new Date(report.created_at).toLocaleString("en-IN")}
@@ -287,13 +293,13 @@ export default function AdminDashboard({ currentProfile }: AdminDashboardProps) 
                           >
                             Dismiss Report
                           </button>
-                          <button
+                          <Link
+                            href={`/verify/${report.restroom_id}`}
                             onClick={() => handleResolveReport(report.id, "resolved")}
-                            className="h-9 px-4 bg-black text-white dark:bg-white dark:text-black text-xs font-bold rounded-xl active:scale-95 transition-transform"
-                            disabled={!!actionLoading}
+                            className="h-9 px-4 bg-black text-white dark:bg-white dark:text-black text-xs font-bold rounded-xl active:scale-95 transition-transform flex items-center justify-center"
                           >
-                            Mark Resolved
-                          </button>
+                            Take Action
+                          </Link>
                         </div>
                       )}
                     </div>
@@ -343,6 +349,14 @@ export default function AdminDashboard({ currentProfile }: AdminDashboardProps) 
 
                     {/* Admin Actions */}
                     <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-stone-100 dark:border-stone-850/60">
+                      {/* Edit */}
+                      <Link
+                        href={`/verify/${restroom.id}`}
+                        className="h-8 px-3 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 rounded-lg text-xs font-bold active:scale-95 transition-transform flex items-center justify-center border border-stone-250 dark:border-stone-700"
+                      >
+                        Edit
+                      </Link>
+
                       {/* Hide/Unhide */}
                       <button
                         onClick={() => handleToggleHideRestroom(restroom)}
@@ -404,10 +418,13 @@ export default function AdminDashboard({ currentProfile }: AdminDashboardProps) 
                     className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex items-center justify-between"
                   >
                     <div>
-                      <h4 className="font-bold text-sm text-stone-905 dark:text-stone-50">
+                      <h4 className="font-bold text-sm text-stone-900 dark:text-stone-50">
                         {prof.full_name || "Anonymous User"}
                       </h4>
-                      <p className="text-xs text-stone-450 dark:text-stone-500 mt-0.5">{prof.email}</p>
+                      <p className="text-xs text-stone-500 mt-0.5">{prof.email}</p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        Joined: {new Date(prof.created_at).toLocaleDateString("en-IN")} • Contributions: {restrooms.filter((r) => r.created_by === prof.id).length}
+                      </p>
                       
                       <div className="flex gap-1.5 mt-2">
                         {prof.is_admin && (

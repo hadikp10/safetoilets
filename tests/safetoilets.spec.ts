@@ -16,29 +16,23 @@ test.describe("SafeToilets E2E Test Suite", () => {
     await expect(loginLink).toHaveAttribute("href", "/login");
   });
 
-  test("2. Navigation to Login Page renders all authentication options", async ({ page }) => {
+  test("2. Navigation to Login Page renders Google authentication", async ({ page }) => {
     // Navigate to Login Page
     await page.goto("http://localhost:3000/login");
     
     // Verify brand icon & heading
-    await expect(page.locator("h1")).toContainText("SafeToilets");
-    await expect(page.locator("p.text-xs").first()).toContainText("Crowdsourced clean toilet locator");
+    await expect(page.locator(".text-4xl")).toContainText("SafeToilets");
+    await expect(page.locator("p").first()).toContainText("Help Kerala find clean toilets");
     
     // Check Google Auth button is present
     await expect(page.locator("button:has-text('Continue with Google')")).toBeVisible();
     
-    // Check Email & Password fields are present
-    await expect(page.locator("input[type='email']")).toBeVisible();
-    await expect(page.locator("input[type='password']")).toBeVisible();
+    // Check guidelines note is present
+    await expect(page.locator("text=By continuing you agree to our community guidelines")).toBeVisible();
     
-    // Check Toggle button works
-    const toggleBtn = page.locator("button:has-text('Need an account? Sign Up')");
-    await expect(toggleBtn).toBeVisible();
-    await toggleBtn.click();
-    
-    // Verify Full Name input appears in Sign Up mode
-    await expect(page.locator("input[placeholder='e.g. John Doe']")).toBeVisible();
-    await expect(page.locator("button[type='submit']")).toContainText("Create Account");
+    // Ensure email/password inputs are NOT present (Google only)
+    await expect(page.locator("input[type='email']")).not.toBeVisible();
+    await expect(page.locator("input[type='password']")).not.toBeVisible();
   });
 
   test("3. Leaflet map container loads immediately on home page", async ({ page }) => {

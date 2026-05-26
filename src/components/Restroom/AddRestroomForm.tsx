@@ -55,6 +55,12 @@ export default function AddRestroomForm({
   // Duplicate Warning bypass flag
   const [bypassDuplicateWarning, setBypassDuplicateWarning] = useState(false);
 
+  const triggerHaptic = (pattern: number | number[]) => {
+    if (typeof window !== "undefined" && "vibrate" in navigator) {
+      navigator.vibrate(pattern);
+    }
+  };
+
   // 1. Validation Checks
   const isValidLocation = selectedLat !== 0 && selectedLng !== 0;
   
@@ -69,6 +75,7 @@ export default function AddRestroomForm({
     if (step === 1) {
       if (!isValidLocation) {
         setErrorMsg("Warning: Please select a valid location on the map.");
+        triggerHaptic([30, 20, 30]);
         return;
       }
       if (duplicateRestroom && !bypassDuplicateWarning) {
@@ -79,10 +86,12 @@ export default function AddRestroomForm({
     } else if (step === 2) {
       if (!name.trim()) {
         setErrorMsg("Please enter a restroom title (e.g. Petrol Pump Restroom).");
+        triggerHaptic([30, 20, 30]);
         return;
       }
       if (!locationName.trim()) {
         setErrorMsg("Please enter an address or area name (e.g. Kozhikode Beach Road).");
+        triggerHaptic([30, 20, 30]);
         return;
       }
       setStep(3);
@@ -194,6 +203,7 @@ export default function AddRestroomForm({
       // Introduce a tiny delay so the user sees the complete status bar animation
       await new Promise((resolve) => setTimeout(resolve, 600));
 
+      triggerHaptic(50);
       onSuccess(finalRestroomData as Restroom);
     } catch (err) {
       console.error("Error creating restroom:", err);
@@ -219,9 +229,9 @@ export default function AddRestroomForm({
   ) => {
     return (
       <div className="flex flex-col gap-1">
-        <div className="flex justify-between text-xs font-semibold text-stone-700 dark:text-stone-300">
+        <div className="flex justify-between text-xs font-semibold text-text-secondary">
           <span>{label}</span>
-          <span className="font-bold text-black dark:text-white">{value} / 5</span>
+          <span className="font-bold text-text-primary dark:text-white">{value} / 5</span>
         </div>
         <div className="flex items-center gap-2 mt-1">
           {[1, 2, 3, 4, 5].map((num) => (
@@ -229,10 +239,10 @@ export default function AddRestroomForm({
               key={num}
               type="button"
               onClick={() => setValue(num)}
-              className={`flex-1 h-9 rounded-lg font-bold border transition-all ${
+              className={`flex-1 h-9 rounded-xl font-bold border transition-all active:scale-[0.97] ${
                 value === num
-                  ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                  : "bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400"
+                  ? "bg-brand-green text-white border-brand-green shadow-button"
+                  : "bg-white dark:bg-stone-900 border-[#E7E5E4] dark:border-stone-800 text-text-secondary"
               }`}
             >
               {num}
@@ -244,16 +254,16 @@ export default function AddRestroomForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white dark:bg-stone-900 w-full max-w-md rounded-t-[2rem] sm:rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white dark:bg-stone-900 w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar shadow-float flex flex-col border border-stone-200 dark:border-stone-800">
         
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
           <div className="flex flex-col">
-            <h2 className="text-lg font-extrabold text-stone-900 dark:text-stone-50">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50">
               Add New Toilet
             </h2>
-            <span className="text-[10px] text-stone-450 dark:text-stone-500 font-bold uppercase tracking-wider mt-0.5">
+            <span className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mt-0.5">
               {loading ? "Publishing..." : `Step ${step} of 5`}
             </span>
           </div>
@@ -364,9 +374,9 @@ export default function AddRestroomForm({
         {/* STEP 1: Verify Location coordinates & Check Duplicates */}
         {!loading && step === 1 && (
           <div className="p-6 flex flex-col gap-5">
-            <div className="bg-stone-50 dark:bg-stone-850/50 border border-stone-200 dark:border-stone-800 rounded-xl p-4 text-xs font-semibold">
-              <p className="text-stone-500 dark:text-stone-400 mb-2">Picked Coordinates:</p>
-              <p className="font-mono text-stone-900 dark:text-stone-100">
+            <div className="bg-surface-muted dark:bg-stone-850/50 border border-[#E7E5E4] dark:border-stone-800 rounded-xl p-4 text-xs font-semibold">
+              <p className="text-text-secondary mb-2">Picked Coordinates:</p>
+              <p className="font-mono text-text-primary dark:text-stone-100">
                 Lat: {selectedLat.toFixed(6)}, Lng: {selectedLng.toFixed(6)}
               </p>
             </div>
@@ -388,21 +398,21 @@ export default function AddRestroomForm({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-8 px-3 text-[11px] font-bold border border-amber-300 rounded-lg active:scale-95 transition-transform"
+                    className="h-9 px-3 text-[11px] font-semibold border border-amber-350 rounded-xl active:scale-[0.97] transition-all"
                   >
                     Review Map
                   </button>
                   <button
                     type="button"
                     onClick={() => setBypassDuplicateWarning(true)}
-                    className="h-8 px-3 bg-amber-600 text-white text-[11px] font-bold rounded-lg active:scale-95 transition-transform"
+                    className="h-9 px-3 bg-amber-600 text-white text-[11px] font-semibold rounded-xl active:scale-[0.97] transition-all"
                   >
                     Proceed Anyway
                   </button>
                 </div>
               </div>
             ) : (
-              <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 leading-relaxed">
+              <p className="text-xs font-semibold text-text-secondary leading-relaxed">
                 Confirm that the dropped pin matches the physical location of the toilet. Drag the pin on the map if you need to adjust coordinates.
               </p>
             )}
@@ -410,7 +420,7 @@ export default function AddRestroomForm({
             <button
               type="button"
               onClick={handleNext}
-              className="h-12 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl active:scale-[0.98] transition-transform text-sm w-full mt-2"
+              className="h-[52px] bg-brand-green hover:bg-brand-green-dark text-white font-semibold rounded-2xl shadow-button active:scale-[0.97] transition-all text-base w-full mt-2"
             >
               Continue
             </button>
@@ -421,7 +431,7 @@ export default function AddRestroomForm({
         {!loading && step === 2 && (
           <div className="p-6 flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Restroom Name
               </label>
               <input
@@ -430,12 +440,12 @@ export default function AddRestroomForm({
                 maxLength={60}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-12 rounded-xl border border-stone-250 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-50 px-4 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white"
+                className="h-12 rounded-xl border border-[#E7E5E4] dark:border-stone-850 bg-white dark:bg-stone-900 text-text-primary dark:text-stone-50 px-4 text-xs font-semibold focus:outline-none focus:border-brand-green font-medium"
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Location/Area Name
               </label>
               <input
@@ -444,7 +454,7 @@ export default function AddRestroomForm({
                 maxLength={100}
                 value={locationName}
                 onChange={(e) => setLocationName(e.target.value)}
-                className="h-12 rounded-xl border border-stone-250 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-50 px-4 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white"
+                className="h-12 rounded-xl border border-[#E7E5E4] dark:border-stone-850 bg-white dark:bg-stone-900 text-text-primary dark:text-stone-50 px-4 text-xs font-semibold focus:outline-none focus:border-brand-green font-medium"
               />
             </div>
 
@@ -452,14 +462,14 @@ export default function AddRestroomForm({
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex-1 h-12 border border-stone-200 dark:border-stone-800 dark:text-stone-300 font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] border-[1.5px] border-brand-green text-brand-green font-semibold rounded-2xl hover:bg-[#DCFCE7] active:scale-[0.97] transition-all duration-150 text-sm"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex-1 h-12 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] bg-brand-green hover:bg-brand-green-dark text-white font-semibold rounded-2xl shadow-button active:scale-[0.97] transition-all duration-150 text-sm"
               >
                 Next
               </button>
@@ -472,13 +482,13 @@ export default function AddRestroomForm({
           <div className="p-6 flex flex-col gap-4">
             {/* Category Type */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Bathroom Type
               </label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as Restroom["type"])}
-                className="h-12 rounded-xl border border-stone-250 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-50 px-4 text-xs font-bold focus:outline-none"
+                className="h-12 rounded-xl border border-[#E7E5E4] dark:border-stone-850 bg-white dark:bg-stone-900 text-text-primary dark:text-stone-50 px-4 text-xs font-bold focus:outline-none"
               >
                 <option value="Restaurant">Restaurant</option>
                 <option value="Petrol Pump">Petrol Pump</option>
@@ -491,7 +501,7 @@ export default function AddRestroomForm({
 
             {/* Toilet style type */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Toilet Style
               </label>
               <div className="flex gap-2">
@@ -500,10 +510,10 @@ export default function AddRestroomForm({
                     key={style}
                     type="button"
                     onClick={() => setToiletType(style as Restroom["toilet_type"])}
-                    className={`flex-1 h-10 rounded-xl border text-xs font-bold transition-colors ${
+                    className={`flex-1 h-10 rounded-xl border text-xs font-bold transition-colors active:scale-[0.97] ${
                       toiletType === style
-                        ? "bg-black text-white border-black dark:bg-white dark:text-black"
-                        : "bg-white dark:bg-stone-900 border-stone-250 dark:border-stone-800 text-stone-700 dark:text-stone-300"
+                        ? "bg-brand-green text-white border-brand-green shadow-button"
+                        : "bg-white dark:bg-stone-900 border-[#E7E5E4] dark:border-stone-855 text-text-secondary"
                     }`}
                   >
                     {style}
@@ -514,7 +524,7 @@ export default function AddRestroomForm({
 
             {/* Gender Access */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Gender Access
               </label>
               <div className="flex gap-2">
@@ -523,10 +533,10 @@ export default function AddRestroomForm({
                     key={access}
                     type="button"
                     onClick={() => setGenderAccess(access as Restroom["gender_access"])}
-                    className={`flex-1 h-10 rounded-xl border text-xs font-bold transition-colors ${
+                    className={`flex-1 h-10 rounded-xl border text-xs font-bold transition-colors active:scale-[0.97] ${
                       genderAccess === access
-                        ? "bg-black text-white border-black dark:bg-white dark:text-black"
-                        : "bg-white dark:bg-stone-900 border-stone-250 dark:border-stone-800 text-stone-700 dark:text-stone-300"
+                        ? "bg-brand-green text-white border-brand-green shadow-button"
+                        : "bg-white dark:bg-stone-900 border-[#E7E5E4] dark:border-stone-850 text-text-secondary"
                     }`}
                   >
                     {access === "Both" ? "M & F" : access}
@@ -536,13 +546,13 @@ export default function AddRestroomForm({
             </div>
 
             {/* Wheelchair accessible */}
-            <div className="flex flex-col gap-1.5 mt-2 bg-stone-50 dark:bg-stone-850/50 p-4 border border-stone-100 dark:border-stone-800 rounded-xl">
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+            <div className="flex flex-col gap-1.5 mt-2 bg-surface-muted dark:bg-stone-850/50 p-4 border border-[#E7E5E4] dark:border-stone-800 rounded-xl">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                 <input
                   type="checkbox"
                   checked={isAccessible}
                   onChange={(e) => setIsAccessible(e.target.checked)}
-                  className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800"
+                  className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                 />
                 Wheelchair Accessible?
               </label>
@@ -552,14 +562,14 @@ export default function AddRestroomForm({
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex-1 h-12 border border-stone-200 dark:border-stone-800 dark:text-stone-300 font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] border-[1.5px] border-brand-green text-brand-green font-semibold rounded-2xl hover:bg-[#DCFCE7] active:scale-[0.97] transition-all duration-150 text-sm"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex-1 h-12 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] bg-brand-green hover:bg-brand-green-dark text-white font-semibold rounded-2xl shadow-button active:scale-[0.97] transition-all duration-150 text-sm"
               >
                 Next
               </button>
@@ -580,14 +590,14 @@ export default function AddRestroomForm({
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex-1 h-12 border border-stone-200 dark:border-stone-800 dark:text-stone-300 font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] border-[1.5px] border-brand-green text-brand-green font-semibold rounded-2xl hover:bg-[#DCFCE7] active:scale-[0.97] transition-all duration-150 text-sm"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex-1 h-12 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] bg-brand-green hover:bg-brand-green-dark text-white font-semibold rounded-2xl shadow-button active:scale-[0.97] transition-all duration-150 text-sm"
               >
                 Next
               </button>
@@ -599,37 +609,37 @@ export default function AddRestroomForm({
         {!loading && step === 5 && (
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
             {/* Facilities checklist */}
-            <div className="bg-stone-50 dark:bg-stone-850/50 rounded-xl p-4 border border-stone-100 dark:border-stone-800 flex flex-col gap-3">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+            <div className="bg-surface-muted dark:bg-stone-850/50 rounded-xl p-4 border border-[#E7E5E4] dark:border-stone-800 flex flex-col gap-3">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Amenities Present
               </h4>
               <div className="flex flex-col gap-2.5">
-                <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+                <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                   <input
                     type="checkbox"
                     checked={hasSoap}
                     onChange={(e) => setHasSoap(e.target.checked)}
-                    className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800"
+                    className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                   />
                   Soap Available
                 </label>
 
-                <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+                <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                   <input
                     type="checkbox"
                     checked={hasMirror}
                     onChange={(e) => setHasMirror(e.target.checked)}
-                    className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800"
+                    className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                   />
                   Mirror Installed
                 </label>
 
-                <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+                <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                   <input
                     type="checkbox"
                     checked={hasSanitary}
                     onChange={(e) => setHasSanitary(e.target.checked)}
-                    className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800"
+                    className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                   />
                   Sanitary Pad Box / Bin
                 </label>
@@ -638,7 +648,7 @@ export default function AddRestroomForm({
 
             {/* Photo Capture */}
             <div className="flex flex-col gap-2">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                 Take Restroom Photo (Optional)
               </h4>
               
@@ -652,7 +662,7 @@ export default function AddRestroomForm({
               />
 
               {photoPreview ? (
-                <div className="relative w-full h-32 rounded-xl bg-stone-100 dark:bg-stone-850 overflow-hidden border border-stone-200 dark:border-stone-800 flex items-center justify-center">
+                <div className="relative w-full h-32 rounded-xl bg-surface-muted dark:bg-stone-850 overflow-hidden border border-[#E7E5E4] dark:border-stone-800 flex items-center justify-center">
                   <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -660,7 +670,7 @@ export default function AddRestroomForm({
                       setPhoto(null);
                       setPhotoPreview(null);
                     }}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 active:scale-90 transition-transform"
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 active:scale-[0.97] transition-transform"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -671,13 +681,13 @@ export default function AddRestroomForm({
                 <button
                   type="button"
                   onClick={() => document.getElementById("add-toilet-file-correct")?.click()}
-                  className="w-full h-24 border-2 border-dashed border-stone-200 dark:border-stone-800 hover:border-stone-300 rounded-xl flex flex-col items-center justify-center gap-1.5 text-stone-500 dark:text-stone-400 active:scale-[0.99] transition-transform"
+                  className="w-full h-24 border-2 border-dashed border-[#E7E5E4] dark:border-stone-800 hover:border-stone-300 rounded-xl flex flex-col items-center justify-center gap-1.5 text-text-secondary active:scale-[0.97] transition-transform"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span className="text-xs font-bold uppercase tracking-wider">Tap to Take Photo</span>
+                  <span className="text-xs font-bold uppercase tracking-wider font-medium">Tap to Take Photo</span>
                 </button>
               )}
             </div>
@@ -687,20 +697,20 @@ export default function AddRestroomForm({
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex-1 h-12 border border-stone-200 dark:border-stone-855 dark:text-stone-300 font-bold rounded-xl active:scale-95 transition-transform text-sm"
+                className="flex-1 h-[52px] border-[1.5px] border-brand-green text-brand-green font-semibold rounded-2xl hover:bg-[#DCFCE7] active:scale-[0.97] transition-all duration-150 text-sm font-bold"
                 disabled={loading}
               >
                 Back
               </button>
               <button
                 type="submit"
-                className="flex-1 h-12 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl active:scale-95 transition-transform flex items-center justify-center text-sm"
+                className="flex-1 h-[52px] bg-brand-green hover:bg-brand-green-dark text-white font-semibold rounded-2xl shadow-button active:scale-[0.97] transition-all duration-150 flex items-center justify-center text-sm font-bold"
                 disabled={loading}
               >
                 {loading ? (
-                  <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg className="animate-spin h-4 w-4 text-current" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
                   </svg>
                 ) : (
                   "Add Toilet"

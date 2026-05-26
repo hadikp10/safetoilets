@@ -7,33 +7,45 @@ import { useGeolocation } from "@/hooks/useGeolocation";
 import { supabase } from "@/lib/supabase";
 import { Restroom } from "@/types";
 import RestroomCard, { calculateDistance } from "@/components/Restroom/RestroomCard";
+import SkeletonCard from "@/components/Restroom/SkeletonCard";
 import RestroomDetail from "@/components/Restroom/RestroomDetail";
 import VerifyRestroomForm from "@/components/Restroom/VerifyRestroomForm";
 import ReportForm from "@/components/Restroom/ReportForm";
 import AddRestroomForm from "@/components/Restroom/AddRestroomForm";
+import { Navigation } from "lucide-react";
 
 // Dynamically import map container with SSR disabled to prevent Leaflet window reference errors
 const MapContainer = dynamic(() => import("@/components/Map/MapContainer"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-stone-100 dark:bg-stone-900 flex items-center justify-center">
-      <svg className="animate-spin h-8 w-8 text-stone-500" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-      </svg>
+    <div className="w-full h-[55vh] min-h-[300px] rounded-b-3xl bg-[#F5F5F4] dark:bg-stone-850 animate-pulse flex items-center justify-center">
+      <span className="text-[#A8A29E] text-sm">Loading map...</span>
     </div>
   ),
 });
 
+const CATEGORIES = ["All", "Public Toilet", "Petrol Pump", "Restaurant", "Mall", "Railway / Bus Station", "Other"];
+
 export default function Home() {
-  const { user, profile, isAuthenticated, isAdmin, logout } = useSupabase();
+  const { user, profile, isAuthenticated, isAdmin, logout, loading: authLoading } = useSupabase();
   const router = useRouter();
   const { latitude, longitude, error: geoError, loading: geoLoading, getPosition } = useGeolocation();
 
   // Application Views & Data
   const [restrooms, setRestrooms] = useState<Restroom[]>([]);
+  const [restroomsLoading, setRestroomsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [hasSearched, setHasSearched] = useState(true);
   const [selectedRestroom, setSelectedRestroom] = useState<Restroom | null>(null);
+  
+  // Geolocation override/fallbacks
+  const [browseAll, setBrowseAll] = useState(false);
+  
+  // Custom Overhaul states
+  const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Form Modals Toggles
   const [showVerifyForm, setShowVerifyForm] = useState(false);
@@ -44,8 +56,16 @@ export default function Home() {
   const [addingCoords, setAddingCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
+  // Pull to refresh logic states
+  const [startY, setStartY] = useState(0);
+  const [pulling, setPulling] = useState(false);
+  const [pullProgress, setPullProgress] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Fetch restrooms on initial load
   const fetchRestrooms = async () => {
+    setRestroomsLoading(true);
+    setFetchError(false);
     try {
       const { data, error } = await supabase
         .from("restrooms")
@@ -55,16 +75,61 @@ export default function Home() {
       setRestrooms(data as Restroom[]);
     } catch (err) {
       console.error("Error loading restrooms:", err);
+      setFetchError(true);
+    } finally {
+      setRestroomsLoading(false);
     }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    if (scrollTop === 0) {
+      setStartY(e.touches[0].pageY);
+      setPulling(true);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!pulling) return;
+    const currentY = e.touches[0].pageY;
+    const diff = currentY - startY;
+    if (diff > 0) {
+      setPullProgress(Math.min(diff, 120));
+      if (diff > 60 && e.cancelable) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (!pulling) return;
+    setPulling(false);
+    if (pullProgress > 60) {
+      setIsRefreshing(true);
+      await fetchRestrooms();
+      setIsRefreshing(false);
+    }
+    setPullProgress(0);
   };
 
   useEffect(() => {
     fetchRestrooms();
+    setMounted(true);
   }, []);
 
-  // Auto-request location access on mount
   useEffect(() => {
-    getPosition();
+    if (router.isReady && router.query.add === "true") {
+      handleAddToiletClick();
+    }
+  }, [router.isReady, router.query]);
+
+  // Scroll tracking on window
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Request location and activate map search
@@ -73,11 +138,15 @@ export default function Home() {
     getPosition();
   };
 
-  // Sort restrooms client-side based on user coordinates (if available)
-  const getSortedRestrooms = () => {
-    if (!latitude || !longitude) return restrooms;
+  // Sort and filter restrooms client-side based on user coordinates and category
+  const getFilteredAndSortedRestrooms = () => {
+    let list = [...restrooms];
+    if (selectedCategory !== "All") {
+      list = list.filter((r) => r.type === selectedCategory);
+    }
+    if (!latitude || !longitude) return list;
 
-    return [...restrooms].sort((a, b) => {
+    return list.sort((a, b) => {
       const distA = calculateDistance(latitude, longitude, a.latitude, a.longitude);
       const distB = calculateDistance(latitude, longitude, b.latitude, b.longitude);
       return distA - distB;
@@ -89,48 +158,93 @@ export default function Home() {
     setSelectedRestroom(restroom);
   };
 
+  // Trigger Add Restroom flow
+  const handleAddToiletClick = () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else {
+      setIsAddingMode(true);
+      setSelectedRestroom(null);
+      setHasSearched(true);
+      setViewMode("map"); // make sure map is visible
+    }
+  };
+
+  const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setIsScrolled(e.currentTarget.scrollTop > 0);
+  };
+
+  const [showIOSHint, setShowIOSHint] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone || window.matchMedia('(display-mode: standalone)').matches;
+      const dismissed = localStorage.getItem("ios-pwa-dismissed") === "true";
+      if (isIOS && !isStandalone && !dismissed) {
+        setShowIOSHint(true);
+      }
+    }
+  }, []);
+
   const activeUserCoords = latitude && longitude ? { latitude, longitude } : null;
+  const filteredRestrooms = getFilteredAndSortedRestrooms();
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 flex flex-col">
+    <div className={`min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 flex flex-col transition-opacity duration-200 ${mounted ? "opacity-100" : "opacity-0"} animate-fadeIn`}>
       {/* Top Navbar */}
-      <header className="h-14 border-b border-stone-200 dark:border-stone-850 px-4 bg-white dark:bg-stone-900 flex justify-between items-center z-25 sticky top-0">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-black text-white dark:bg-white dark:text-black rounded-lg flex items-center justify-center font-black text-sm">
-            ST
-          </div>
-          <span className="font-extrabold text-sm tracking-tight">SafeToilets</span>
+      <header className={`glass-header sticky top-0 z-50 h-[56px] px-4 flex justify-between items-center transition-all ${isScrolled ? "scrolled-header" : ""}`}>
+        <div className="flex items-center">
+          <Link href="/" className="text-xl font-bold text-brand-green tracking-[-0.5px]">
+            SafeToilets
+          </Link>
         </div>
 
         <div className="flex items-center gap-2">
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="h-8 px-3 border border-stone-200 dark:border-stone-800 rounded-lg text-xs font-bold flex items-center justify-center hover:bg-stone-50 dark:hover:bg-stone-850 transition-colors"
-            >
-              Admin
-            </Link>
-          )}
-
-          {isAuthenticated && profile ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-stone-500 max-w-[80px] truncate hidden xs:block">
-                {profile.full_name || "User"}
-              </span>
-              <button
-                onClick={logout}
-                className="h-8 px-3 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 rounded-lg text-xs font-bold hover:bg-stone-200 active:scale-95 transition-all"
-              >
-                Logout
-              </button>
-            </div>
+          {authLoading ? (
+            <div className="w-8 h-8 rounded-full bg-[#F5F5F4] dark:bg-stone-850 animate-pulse" />
           ) : (
-            <Link
-              href="/login"
-              className="h-8 px-3 bg-black text-white dark:bg-white dark:text-black rounded-lg text-xs font-bold flex items-center justify-center hover:bg-black/90 active:scale-95 transition-all"
-            >
-              Login
-            </Link>
+            <>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-sm text-text-secondary dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 min-h-[36px] px-3 rounded-xl transition-colors font-medium flex items-center justify-center animate-fadeIn"
+                >
+                  Admin
+                </Link>
+              )}
+
+              {isAuthenticated && profile ? (
+                <div className="flex items-center gap-2 animate-fadeIn">
+                  <Link
+                    href="/profile"
+                    className="text-xs font-semibold text-text-secondary max-w-[80px] truncate hover:text-stone-950 dark:hover:text-stone-100 hidden xs:block"
+                  >
+                    {profile.full_name || "User"}
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="text-sm text-text-secondary dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 min-h-[36px] px-3 rounded-xl transition-colors font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-sm text-text-secondary dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 min-h-[36px] px-3 rounded-xl transition-colors font-medium flex items-center justify-center animate-fadeIn"
+                >
+                  Login
+                </Link>
+              )}
+
+              <button
+                onClick={handleAddToiletClick}
+                className="bg-brand-green hover:bg-brand-green-dark text-sm font-medium text-white min-h-[36px] px-3 rounded-xl shadow-button transition-all active:scale-[0.97] animate-fadeIn"
+              >
+                Add Toilet
+              </button>
+            </>
           )}
         </div>
       </header>
@@ -142,27 +256,24 @@ export default function Home() {
           <h1 className="text-3xl font-black tracking-tight leading-tight">
             Find Clean Public Toilets Nearby
           </h1>
-          <p className="text-xs text-stone-550 dark:text-stone-400 font-semibold mt-2.5 leading-relaxed">
+          <p className="text-xs text-text-secondary dark:text-stone-400 font-semibold mt-2.5 leading-relaxed">
             Real-time crowdsourced cleanliness ratings and facilities mapping.
           </p>
 
           <button
             onClick={handleFindNearby}
-            className="w-full h-14 bg-black text-white dark:bg-white dark:text-black font-black rounded-2xl text-sm flex items-center justify-center gap-2 mt-8 shadow-lg active:scale-[0.98] transition-transform"
+            className="w-full h-[52px] bg-brand-green text-white font-semibold rounded-2xl text-base flex items-center justify-center gap-2 mt-8 shadow-button hover:bg-brand-green-dark active:scale-[0.97] transition-all duration-150"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            <Navigation className="w-5 h-5 text-white" strokeWidth={1.5} />
             Find Nearby Toilets
           </button>
 
-          <div className="mt-12 text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-2">
+          <div className="mt-12 text-[10px] font-bold text-stone-450 dark:text-stone-500 uppercase tracking-widest flex items-center gap-2">
             <span>OpenStreetMap</span>
             <span className="w-1.5 h-1.5 bg-stone-300 dark:bg-stone-700 rounded-full"></span>
             <span>Supabase Secure RLS</span>
             <span className="w-1.5 h-1.5 bg-stone-300 dark:bg-stone-700 rounded-full"></span>
-            <span>Client Encrypted Exif</span>
+            <span>Exif Cleaned</span>
           </div>
         </main>
       ) : (
@@ -171,7 +282,7 @@ export default function Home() {
           
           {/* Geolocation Loading / Error alerts */}
           {geoLoading && (
-            <div className="bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-center text-xs font-bold z-30 flex items-center justify-center gap-2">
+            <div className="bg-brand-green text-white px-4 py-2 text-center text-xs font-bold z-30 flex items-center justify-center gap-2">
               <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -180,63 +291,78 @@ export default function Home() {
             </div>
           )}
 
-          {geoError && (
-            <div className="bg-rose-500 text-white px-4 py-2.5 text-center text-xs font-bold z-30 leading-snug">
-              {geoError}. Showing central Kerala default view.
-            </div>
-          )}
+          {/* Map Section */}
+          <div 
+            className={`w-full transition-all duration-300 overflow-hidden rounded-b-3xl relative flex-shrink-0 ${
+              viewMode === "map" ? "h-[56vh] md:h-[50vh]" : "h-0"
+            }`}
+          >
+            {geoError && !browseAll ? (
+              <div className="w-full h-full p-4 flex flex-col justify-center bg-stone-50 dark:bg-stone-950">
+                <div className="bg-[#FEF9C3] rounded-2xl p-4 border border-[#FEF08A] flex flex-col gap-3 max-w-sm mx-auto">
+                  <div className="flex items-start gap-3">
+                    <span className="text-[24px] text-[#D97706] flex-shrink-0" role="img" aria-label="location">📍</span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-[#A16207]">Location access needed</h4>
+                      <p className="text-xs text-[#A16207] mt-1 leading-normal">
+                        Allow location to find toilets near you, or browse all toilets in Kerala.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        alert("To enable location access:\n1. Click the site settings icon next to the URL in your browser address bar.\n2. Allow 'Location' permission.\n3. Refresh this page.");
+                        getPosition();
+                      }}
+                      className="w-full h-10 bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
+                    >
+                      Enable Location
+                    </button>
+                    <button
+                      onClick={() => {
+                        setBrowseAll(true);
+                        fetchRestrooms();
+                      }}
+                      className="w-full h-10 bg-white hover:bg-stone-50 text-[#D97706] border border-[#F59E0B] text-xs font-semibold rounded-xl transition-colors"
+                    >
+                      Browse All Toilets
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <MapContainer
+                  restrooms={restrooms.filter(r => selectedCategory === "All" || r.type === selectedCategory)}
+                  selectedRestroom={selectedRestroom}
+                  onSelectRestroom={handleSelectRestroom}
+                  userCoords={browseAll ? null : activeUserCoords}
+                  isAddingMode={isAddingMode}
+                  onLocationSelect={(lat, lng) => setAddingCoords({ lat, lng })}
+                  centerOverride={browseAll ? { latitude: 10.8505, longitude: 76.2711 } : null}
+                />
 
-          {/* Map Section (Upper Half) */}
-          <div className="h-[45vh] relative flex-shrink-0 border-b border-stone-200 dark:border-stone-850">
-            <MapContainer
-              restrooms={restrooms}
-              selectedRestroom={selectedRestroom}
-              onSelectRestroom={handleSelectRestroom}
-              userCoords={activeUserCoords}
-              isAddingMode={isAddingMode}
-              onLocationSelect={(lat, lng) => setAddingCoords({ lat, lng })}
-            />
-
-            {/* Quick Actions overlay on Map */}
-            <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
-              {/* Recenter button */}
-              <button
-                onClick={handleFindNearby}
-                className="w-10 h-10 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-transform"
-                title="Find my location"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-
-              {/* Add Restroom Button */}
-              {!isAddingMode && (
-                <button
-                  onClick={() => {
-                    if (!isAuthenticated) {
-                      router.push("/login");
-                    } else {
-                      setIsAddingMode(true);
-                      setSelectedRestroom(null);
-                    }
-                  }}
-                  className="h-10 px-3 bg-black text-white dark:bg-white dark:text-black rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-90 transition-transform"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Toilet
-                </button>
-              )}
-            </div>
+                {/* Quick Actions overlay on Map */}
+                <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2">
+                  {/* Recenter button */}
+                  <button
+                    onClick={handleFindNearby}
+                    className="w-11 h-11 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-full flex items-center justify-center shadow-float active:scale-[0.97] transition-all duration-100"
+                    title="Find my location"
+                  >
+                    <Navigation className="w-5 h-5 text-brand-green" strokeWidth={1.5} />
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Add Toilet Mode Bottom Panel */}
             {isAddingMode && addingCoords && (
-              <div className="absolute bottom-4 left-4 right-4 z-20 bg-white dark:bg-stone-900 border border-stone-250 dark:border-stone-800 rounded-2xl p-4 shadow-xl flex items-center justify-between">
+              <div className="absolute bottom-4 left-4 right-4 z-20 bg-white dark:bg-stone-900 border border-[#E7E5E4] dark:border-stone-800 rounded-2xl p-4 shadow-float flex items-center justify-between">
                 <div>
-                  <h4 className="font-extrabold text-xs">Set Pin Location</h4>
-                  <p className="text-[10px] text-stone-450 mt-0.5">Drag map pin to exact restroom site</p>
+                  <h4 className="font-bold text-xs text-text-primary">Set Pin Location</h4>
+                  <p className="text-[10px] text-text-secondary mt-0.5">Drag map pin to exact restroom site</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -244,13 +370,13 @@ export default function Home() {
                       setIsAddingMode(false);
                       setAddingCoords(null);
                     }}
-                    className="h-9 px-3 border border-stone-200 dark:border-stone-800 text-[11px] font-bold rounded-lg"
+                    className="h-9 px-3 border border-stone-200 dark:border-stone-800 text-[11px] font-semibold rounded-xl text-text-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => setShowAddForm(true)}
-                    className="h-9 px-3 bg-black text-white dark:bg-white dark:text-black text-[11px] font-bold rounded-lg"
+                    className="h-9 px-3 bg-brand-green text-white text-[11px] font-semibold rounded-xl shadow-button hover:bg-brand-green-dark"
                   >
                     Confirm Location
                   </button>
@@ -259,23 +385,109 @@ export default function Home() {
             )}
           </div>
 
-          {/* List View Section (Lower Half) */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar bg-stone-50 dark:bg-stone-950">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xs font-extrabold uppercase tracking-widest text-stone-400 dark:text-stone-500">
-                Toilets {activeUserCoords ? "Sorted by distance" : "Nearby"}
-              </h2>
-              <span className="text-[10px] font-bold text-stone-550 bg-stone-200/50 dark:bg-stone-850 px-2 py-0.5 rounded-full">
-                {restrooms.length} found
-              </span>
-            </div>
+          {/* Filter Pills Bar */}
+          <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide bg-white dark:bg-stone-900 border-b border-[#E7E5E4] dark:border-stone-850/60 flex-shrink-0">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`rounded-full text-xs font-medium px-3 py-1.5 min-h-[32px] whitespace-nowrap transition-colors duration-150 ${
+                  selectedCategory === cat
+                    ? "bg-brand-green text-white"
+                    : "bg-surface-muted text-text-secondary dark:bg-stone-800 dark:text-stone-300"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
-            {restrooms.length === 0 ? (
-              <div className="py-12 text-center text-xs font-semibold text-stone-400">
-                No toilets registered yet. Be the first to add one!
+          {/* Section Header */}
+          <div className="px-4 py-2 flex justify-between items-center bg-white dark:bg-stone-900 flex-shrink-0">
+            <span className="text-sm font-semibold text-text-primary">
+              {filteredRestrooms.length} {filteredRestrooms.length === 1 ? "toilet" : "toilets"} nearby
+            </span>
+            <div className="flex bg-surface-muted dark:bg-stone-800 p-0.5 rounded-lg">
+              <button
+                onClick={() => setViewMode("map")}
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${
+                  viewMode === "map"
+                    ? "bg-white dark:bg-stone-900 shadow-sm text-text-primary"
+                    : "text-text-secondary dark:text-stone-400"
+                }`}
+              >
+                Map
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${
+                  viewMode === "list"
+                    ? "bg-white dark:bg-stone-900 shadow-sm text-text-primary"
+                    : "text-text-secondary dark:text-stone-400"
+                }`}
+              >
+                List
+              </button>
+            </div>
+          </div>
+
+          {/* List View Section */}
+          <div 
+            onScroll={handleListScroll}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`flex-1 overflow-y-auto px-4 pb-8 space-y-3 no-scrollbar bg-stone-50 dark:bg-stone-950 transition-all ${
+              viewMode === "list" ? "block" : "block"
+            }`}
+          >
+            {/* Pull to refresh indicator */}
+            {(pullProgress > 0 || isRefreshing) && (
+              <div 
+                className="flex items-center justify-center py-2 transition-all overflow-hidden bg-stone-50 dark:bg-stone-950 text-[#78716C]"
+                style={{ height: isRefreshing ? "40px" : `${Math.min(pullProgress / 1.5, 40)}px` }}
+              >
+                {isRefreshing ? (
+                  <div className="flex items-center gap-1.5 text-xs font-semibold animate-pulse">
+                    <svg className="animate-spin h-3.5 w-3.5 text-brand-green" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Refreshing...</span>
+                  </div>
+                ) : pullProgress > 60 ? (
+                  <span className="text-xs font-semibold animate-pulse">Release to refresh</span>
+                ) : (
+                  <span className="text-xs font-medium">Pull to refresh</span>
+                )}
+              </div>
+            )}
+
+            {restroomsLoading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : fetchError ? (
+              <div className="flex items-center gap-2 py-3 px-4 bg-[#F5F5F4] dark:bg-stone-900 rounded-xl mx-4 my-2">
+                <span className="text-[#78716C] dark:text-stone-400 text-xs flex-1">
+                  Couldn&apos;t load. Check connection.
+                </span>
+                <button 
+                  className="text-[#0EA5E9] text-xs font-medium px-2.5 py-1 rounded hover:bg-stone-250 dark:hover:bg-stone-800"
+                  onClick={fetchRestrooms}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : filteredRestrooms.length === 0 ? (
+              <div className="py-12 text-center text-xs font-semibold text-text-disabled">
+                No toilets registered under this category yet.
               </div>
             ) : (
-              getSortedRestrooms().map((restroom) => (
+              filteredRestrooms.map((restroom) => (
                 <RestroomCard
                   key={restroom.id}
                   restroom={restroom}
@@ -348,6 +560,26 @@ export default function Home() {
 
         </main>
       )}
+
+      {/* iOS PWA passive install hint banner */}
+      {showIOSHint && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#F5F5F4] dark:bg-stone-900 border-t border-[#E7E5E4] dark:border-stone-800 px-4 py-3 flex items-center justify-between shadow-lg">
+          <span className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+            Add to Home Screen for quick access (Share → Add to Home Screen)
+          </span>
+          <button
+            onClick={() => {
+              localStorage.setItem("ios-pwa-dismissed", "true");
+              setShowIOSHint(false);
+            }}
+            className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-250 text-xl font-bold p-1 ml-2 leading-none"
+            aria-label="Dismiss install banner hint"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -155,12 +155,12 @@ export default function VerifyRestroomForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white dark:bg-stone-900 w-full max-w-md rounded-t-[2rem] sm:rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white dark:bg-stone-900 w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar shadow-float flex flex-col border border-stone-200 dark:border-stone-800">
         
         {/* Form Header */}
         <div className="px-6 pt-6 pb-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between">
-          <h2 className="text-lg font-extrabold text-stone-900 dark:text-stone-50">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50">
             Verify & Update Toilet
           </h2>
           <button
@@ -169,7 +169,7 @@ export default function VerifyRestroomForm({
             disabled={loading}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -191,37 +191,37 @@ export default function VerifyRestroomForm({
           </div>
 
           {/* Facilities Checkboxes */}
-          <div className="bg-stone-50 dark:bg-stone-850/50 rounded-xl p-4 border border-stone-100 dark:border-stone-800 flex flex-col gap-3">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+          <div className="bg-surface-muted dark:bg-stone-850/50 rounded-xl p-4 border border-[#E7E5E4] dark:border-stone-800 flex flex-col gap-3">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
               Check Facilities Present
             </h4>
             <div className="flex flex-col gap-2.5">
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                 <input
                   type="checkbox"
                   checked={hasSoap}
                   onChange={(e) => setHasSoap(e.target.checked)}
-                  className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                  className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                 />
                 Soap Available
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                 <input
                   type="checkbox"
                   checked={hasMirror}
                   onChange={(e) => setHasMirror(e.target.checked)}
-                  className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                  className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                 />
                 Mirror Installed
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-semibold select-none text-text-primary dark:text-stone-200">
                 <input
                   type="checkbox"
                   checked={hasSanitary}
                   onChange={(e) => setHasSanitary(e.target.checked)}
-                  className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black dark:border-stone-700 dark:bg-stone-800 dark:text-white"
+                  className="w-4 h-4 rounded border-stone-300 text-brand-green focus:ring-brand-green dark:border-stone-700 dark:bg-stone-800"
                 />
                 Sanitary Pad Box / Bin
               </label>
@@ -230,7 +230,7 @@ export default function VerifyRestroomForm({
 
           {/* Camera Capture / Photo Upload */}
           <div className="flex flex-col gap-2">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-stone-400 dark:text-stone-500">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
               Upload Latest Toilet Photo (Optional)
             </h4>
             
@@ -244,7 +244,7 @@ export default function VerifyRestroomForm({
             />
 
             {photoPreview ? (
-              <div className="relative w-full h-32 rounded-xl bg-stone-100 dark:bg-stone-800 overflow-hidden border border-stone-200 dark:border-stone-800 flex items-center justify-center">
+              <div className="relative w-full h-32 rounded-xl bg-surface-muted dark:bg-stone-800 overflow-hidden border border-[#E7E5E4] dark:border-stone-800 flex items-center justify-center">
                 <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
@@ -252,7 +252,7 @@ export default function VerifyRestroomForm({
                     setPhoto(null);
                     setPhotoPreview(null);
                   }}
-                  className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 active:scale-90 transition-transform"
+                  className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 active:scale-[0.97] transition-transform"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -263,7 +263,7 @@ export default function VerifyRestroomForm({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-24 border-2 border-dashed border-stone-200 dark:border-stone-800 hover:border-stone-300 rounded-xl flex flex-col items-center justify-center gap-1.5 text-stone-500 dark:text-stone-400 active:scale-[0.99] transition-transform"
+                className="w-full h-24 border-2 border-dashed border-[#E7E5E4] dark:border-stone-800 hover:border-stone-300 rounded-xl flex flex-col items-center justify-center gap-1.5 text-text-secondary active:scale-[0.97] transition-all"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -279,20 +279,20 @@ export default function VerifyRestroomForm({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-12 border border-stone-200 dark:border-stone-850 dark:text-stone-300 font-bold rounded-xl active:scale-95 transition-transform text-sm"
+              className="flex-1 h-[52px] border-[1.5px] border-brand-green text-brand-green font-semibold rounded-2xl hover:bg-[#DCFCE7] active:scale-[0.97] transition-all duration-150 text-sm"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 h-12 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl active:scale-95 transition-transform flex items-center justify-center text-sm"
+              className="flex-1 h-[52px] bg-brand-green hover:bg-brand-green-dark text-white font-semibold rounded-2xl shadow-button active:scale-[0.97] transition-all duration-150 flex items-center justify-center text-sm"
               disabled={loading}
             >
               {loading ? (
-                <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <svg className="animate-spin h-4 w-4 text-current" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
                 </svg>
               ) : (
                 "Submit Update"

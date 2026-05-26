@@ -4,14 +4,8 @@ import Link from "next/link";
 import { useSupabase } from "@/hooks/useSupabase";
 
 export default function LoginPage() {
-  const { loginWithGoogle, loginWithEmail, signUpWithEmail, isAuthenticated, loading } = useSupabase();
+  const { loginWithGoogle, isAuthenticated, loading } = useSupabase();
   const router = useRouter();
-
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
@@ -20,33 +14,12 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, loading, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg("");
-    setAuthLoading(false);
-    
-    if (!email || !password) {
-      setErrorMsg("Please enter both email and password.");
-      return;
-    }
-    if (isSignUp && !fullName) {
-      setErrorMsg("Please enter your name.");
-      return;
-    }
-
+  const handleGoogleLogin = async () => {
     setAuthLoading(true);
     try {
-      if (isSignUp) {
-        await signUpWithEmail(email, password, fullName);
-      } else {
-        await loginWithEmail(email, password);
-      }
-      router.push("/");
-    } catch (err: unknown) {
-      console.error(err);
-      const message = err instanceof Error ? err.message : "Authentication failed. Please verify your credentials.";
-      setErrorMsg(message);
-    } finally {
+      await loginWithGoogle();
+    } catch (err) {
+      console.error("Google OAuth error:", err);
       setAuthLoading(false);
     }
   };
@@ -54,146 +27,69 @@ export default function LoginPage() {
   const isBtnDisabled = loading || authLoading;
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex flex-col items-center justify-center px-4 animate-fadeIn">
       <div className="w-full max-w-sm flex flex-col text-center">
-        {/* Brand Marker */}
-        <div className="mb-6 flex justify-center">
-          <div className="w-12 h-12 bg-black text-white dark:bg-white dark:text-black rounded-2xl flex items-center justify-center font-extrabold text-xl shadow-md">
-            ST
-          </div>
+        {/* SafeToilets Logo */}
+        <div className="text-4xl font-extrabold text-brand-green tracking-tight select-none mb-2">
+          SafeToilets
         </div>
 
-        <h1 className="text-2xl font-black tracking-tight text-stone-900 dark:text-stone-50">
-          SafeToilets
-        </h1>
-        <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold mt-1">
-          Crowdsourced clean toilet locator for Kerala, India
+        {/* Tagline */}
+        <p className="text-sm text-[#78716C] dark:text-stone-400 mb-8 font-medium">
+          Help Kerala find clean toilets
         </p>
 
-        {/* Login Button Card */}
-        <div className="mt-8 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-850 rounded-2xl p-6 shadow-sm text-left">
-          <p className="text-xs text-stone-600 dark:text-stone-400 font-bold mb-4 text-center">
+        {/* Login Card */}
+        <div className="bg-white dark:bg-stone-900 border border-[#E7E5E4] dark:border-stone-850 rounded-3xl p-6 shadow-card text-left flex flex-col gap-4">
+          <p className="text-xs text-text-secondary dark:text-stone-450 font-bold text-center leading-relaxed">
             You must log in to register new toilets or verify details.
           </p>
 
-          {errorMsg && (
-            <div className="mb-4 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-center">
-              {errorMsg}
-            </div>
-          )}
-
           <button
-            onClick={loginWithGoogle}
+            onClick={handleGoogleLogin}
             disabled={isBtnDisabled}
-            className="w-full h-12 bg-black text-white dark:bg-white dark:text-black font-extrabold rounded-xl text-xs flex items-center justify-center gap-3 active:scale-[0.98] transition-transform shadow-sm"
+            className="w-full h-[52px] bg-white text-stone-700 hover:bg-stone-50 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-750 border border-[#E7E5E4] dark:border-stone-700 font-semibold rounded-2xl text-sm flex items-center justify-center gap-3 active:scale-[0.97] transition-all shadow-button relative overflow-hidden"
           >
-            {loading ? (
-              <svg className="animate-spin h-5 w-5 text-current" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            {authLoading ? (
+              <svg className="animate-spin h-4 w-4 text-current" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
               </svg>
             ) : (
               <>
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.52 4.114-5.127 4.114a5.955 5.955 0 0 1-5.96-5.96 5.955 5.955 0 0 1 5.96-5.96c2.323 0 4.148 1.488 4.908 3.518l3.96-2.3C20.61 3.565 16.7 1 12 1 5.925 1 12s4.925 11 11 11c5.8 0 10.825-4.145 10.825-11 0-.69-.065-1.39-.185-2.015H12.24z" />
+                {/* Google "G" SVG icon */}
+                <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    fill="#EA4335"
+                  />
                 </svg>
-                Continue with Google
+                <span>Continue with Google</span>
               </>
             )}
           </button>
 
-          {/* Divider */}
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center" aria-hidden="true">
-              <div className="w-full border-t border-stone-200 dark:border-stone-800" />
-            </div>
-            <div className="relative flex justify-center text-2xs font-bold uppercase">
-              <span className="bg-white dark:bg-stone-900 px-2.5 text-stone-400 dark:text-stone-500">
-                Or use email
-              </span>
-            </div>
-          </div>
-
-          {/* Email/Password Form */}
-          <form onSubmit={handleSubmit} className="space-y-3.5">
-            {isSignUp && (
-              <div>
-                <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 text-xs font-semibold placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all"
-                />
-              </div>
-            )}
-
-            <div>
-              <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 text-xs font-semibold placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 text-xs font-semibold placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isBtnDisabled}
-              className="w-full h-11 mt-2 bg-stone-900 text-white dark:bg-stone-100 dark:text-black font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-transform shadow-sm"
-            >
-              {authLoading ? (
-                <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              ) : isSignUp ? (
-                "Create Account"
-              ) : (
-                "Sign In"
-              )}
-            </button>
-          </form>
-
-          {/* Toggle link */}
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setErrorMsg("");
-              }}
-              className="text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-300 text-xs font-semibold transition-colors"
-            >
-              {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
-            </button>
+          <div className="text-[10px] text-[#A8A29E] text-center mt-1 leading-normal">
+            By continuing you agree to our community guidelines.
           </div>
         </div>
 
         {/* Back Link */}
         <Link
           href="/"
-          className="text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-400 text-xs font-semibold mt-6 transition-colors"
+          className="text-text-secondary hover:text-text-primary text-xs font-semibold mt-6 transition-colors"
         >
           Browse toilets without logging in
         </Link>

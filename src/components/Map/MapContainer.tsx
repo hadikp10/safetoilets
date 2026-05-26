@@ -10,6 +10,7 @@ interface MapContainerProps {
   userCoords: { latitude: number; longitude: number } | null;
   isAddingMode: boolean;
   onLocationSelect?: (lat: number, lng: number) => void;
+  centerOverride?: { latitude: number; longitude: number } | null;
 }
 
 export default function MapContainer({
@@ -19,6 +20,7 @@ export default function MapContainer({
   userCoords,
   isAddingMode,
   onLocationSelect,
+  centerOverride,
 }: MapContainerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -44,18 +46,20 @@ export default function MapContainer({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    // Use user location, selected restroom, or Kerala center as default starting point
+    // Use user location, selected restroom, center override, or Kerala center as default starting point
     const initialLat = selectedRestroom?.latitude 
+      || centerOverride?.latitude
       || userCoords?.latitude 
       || KERALA_CENTER.latitude;
     const initialLng = selectedRestroom?.longitude 
+      || centerOverride?.longitude
       || userCoords?.longitude 
       || KERALA_CENTER.longitude;
 
     const map = L.map(mapContainerRef.current, {
       zoomControl: true,
       attributionControl: true,
-    }).setView([initialLat, initialLng], 14);
+    }).setView([initialLat, initialLng], selectedRestroom ? 16 : centerOverride ? 8 : 14);
 
     mapRef.current = map;
 
@@ -66,6 +70,17 @@ export default function MapContainer({
       }
     };
   }, []);
+
+  // Effect to watch centerOverride changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !centerOverride || isAddingMode) return;
+
+    map.setView([centerOverride.latitude, centerOverride.longitude], 8, {
+      animate: true,
+      duration: 0.5,
+    });
+  }, [centerOverride, isAddingMode]);
 
   // 2. Update Map Tile Layer based on theme (Light vs Dark)
   useEffect(() => {
@@ -102,14 +117,14 @@ export default function MapContainer({
       if (restroom.is_hidden) return;
 
       const score = restroom.overall_score;
-      // Green = Clean (>= 3.8), Yellow = Average (>= 2.5), Red = Poor (< 2.5)
-      let colorClass = "bg-emerald-500 border-emerald-400 text-white";
+      // Green = Clean (>= 4.0), Yellow = Average (>= 2.5), Red = Poor (< 2.5)
+      let colorClass = "bg-brand-green border-brand-green text-white";
       if (score > 0 && score < 2.5) {
-        colorClass = "bg-rose-500 border-rose-400 text-white";
-      } else if (score >= 2.5 && score < 3.8) {
-        colorClass = "bg-amber-500 border-amber-400 text-white";
+        colorClass = "bg-rose-500 border-rose-500 text-white";
+      } else if (score >= 2.5 && score < 4.0) {
+        colorClass = "bg-amber-500 border-amber-500 text-white";
       } else if (score === 0) {
-        colorClass = "bg-stone-500 border-stone-400 text-white"; // Unverified / New
+        colorClass = "bg-stone-500 border-stone-500 text-white"; // Unverified / New
       }
 
       // Modern information-rich pill marker
@@ -117,8 +132,8 @@ export default function MapContainer({
       const customIcon = L.divIcon({
         className: "custom-leaflet-icon-pill",
         html: `
-          <div class="flex flex-col items-center group transition-all duration-200 hover:scale-105 active:scale-95">
-            <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black shadow-md border ${colorClass}">
+          <div class="marker-pill-container flex flex-col items-center group transition-transform duration-150 ease-out hover:scale-105 active:scale-95" style="transform-origin: bottom center;">
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold shadow-marker border ${colorClass}">
               <span>🚽</span>
               <span>${scoreStr}</span>
             </div>
@@ -150,6 +165,35 @@ export default function MapContainer({
     });
   }, [selectedRestroom, isAddingMode]);
 
+  // 4.5. Scale selected marker
+  useEffect(() => {
+    // Reset all markers
+    Object.keys(markersRef.current).forEach((id) => {
+      const marker = markersRef.current[id];
+      const el = marker.getElement();
+      if (el) {
+        const container = el.querySelector(".marker-pill-container") as HTMLElement;
+        if (container) {
+          container.style.transform = "scale(1)";
+        }
+      }
+    });
+
+    // Scale active marker
+    if (selectedRestroom) {
+      const selectedMarker = markersRef.current[selectedRestroom.id];
+      if (selectedMarker) {
+        const el = selectedMarker.getElement();
+        if (el) {
+          const container = el.querySelector(".marker-pill-container") as HTMLElement;
+          if (container) {
+            container.style.transform = "scale(1.4)";
+          }
+        }
+      }
+    }
+  }, [selectedRestroom, restrooms]);
+
   // 5. Render User Location Marker
   useEffect(() => {
     const map = mapRef.current;
@@ -162,7 +206,7 @@ export default function MapContainer({
         className: "user-location-icon",
         html: `
           <div class="relative flex items-center justify-center w-8 h-8">
-            <div class="absolute w-6 h-6 bg-blue-500/30 rounded-full animate-ping"></div>
+            <div class="absolute w-6 h-6 bg-blue-500/30 rounded-full location-ring"></div>
             <div class="w-4 h-4 bg-blue-600 border-2 border-white rounded-full shadow-lg"></div>
           </div>
         `,
@@ -243,8 +287,8 @@ export default function MapContainer({
   }, [isAddingMode]);
 
   return (
-    <div className="relative w-full h-full bg-stone-100 dark:bg-stone-900 overflow-hidden">
-      <div ref={mapContainerRef} className="w-full h-full z-10" />
+    <div className="relative w-full h-full bg-stone-100 dark:bg-stone-900 rounded-b-3xl overflow-hidden">
+      <div ref={mapContainerRef} className="w-full h-full z-10 rounded-b-3xl overflow-hidden" />
     </div>
   );
 }

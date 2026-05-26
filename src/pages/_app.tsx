@@ -2,6 +2,8 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import Head from "next/head";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/hooks/useToast";
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
@@ -33,7 +35,11 @@ export default function App({ Component, pageProps }: AppProps) {
           content="Help people find clean public toilets nearby using live crowd-verified data."
         />
       </Head>
-      <Component {...pageProps} />
+      <ErrorBoundary>
+        <ToastProvider>
+          <Component {...pageProps} />
+        </ToastProvider>
+      </ErrorBoundary>
     </>
   );
 }

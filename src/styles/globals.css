@@ -116,7 +116,7 @@ body {
 }
 
 /* Safe Bottom-Sheet Slide Animation */
-@keyframes slideUp {
+@keyframes appleSheetEnter {
   from {
     transform: translateY(100%);
   }
@@ -125,6 +125,123 @@ body {
   }
 }
 
-.animate-slide-up {
-  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-sheet-enter {
+  animation: appleSheetEnter 280ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
+
+/* Glassmorphism Header Effect */
+.glass-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.scrolled-header {
+  border-bottom: 1px solid rgba(231, 229, 228, 0.6) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass-header {
+    background: rgba(12, 10, 9, 0.85) !important;
+  }
+  .scrolled-header {
+    border-bottom: 1px solid rgba(46, 42, 39, 0.6) !important;
+  }
+}
+
+/* Custom Verification Pulse Animation */
+@keyframes pulse-check {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.95); }
+}
+
+.animate-pulse-check {
+  animation: pulse-check 2s ease-in-out infinite;
+}
+
+/* Scrollbar Hide class for filters */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Page fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 200ms ease-out forwards;
+}
+
+/* Location pulse dot */
+@keyframes locationPulse {
+  0%   { transform: scale(1); opacity: 1; }
+  70%  { transform: scale(2.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.location-ring {
+  animation: locationPulse 2s ease-out infinite;
+}
+
+/* Verification badge pulse */
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+.badge-pulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* Toast notification */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-12px); }
+}
+.toast-enter { animation: toastIn 200ms ease-out forwards; }
+.toast-exit  { animation: toastOut 150ms ease-in forwards; }
+
+/* Bottom sheet sliding transitions */
+.sheet-enter {
+  animation: sheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards;
+}
+.sheet-exit {
+  animation: sheetDown 200ms ease-in forwards;
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes sheetDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+/* Backdrop fade in */
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.backdrop-enter {
+  animation: backdropIn 280ms ease-out forwards;
+}
+
+/* Accessibility and Prefers Reduced Motion rules */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
