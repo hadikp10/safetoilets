@@ -26,15 +26,21 @@ export function useSupabase() {
 
   useEffect(() => {
     // 1. Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
+      })
+      .catch((err) => {
+        console.error("Error getting initial session:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -49,8 +55,17 @@ export function useSupabase() {
       }
     );
 
+    // 3. Handle bfcache pageshow (reset loading spinner on back button)
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setLoading(false);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener("pageshow", handlePageShow);
     };
   }, []);
 
