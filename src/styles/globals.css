@@ -2,111 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #F7F5F0; /* Soft warm alabaster/cream background */
-  --foreground: #1C1917; /* Stone 900 */
-  --card-bg: #FFFFFF;
-  --card-border: #E7E5E4; /* Stone 200 */
-  --accent: #1C1917;
-  --accent-foreground: #F7F5F0;
-  
-  --score-green: #10B981;
-  --score-yellow: #F59E0B;
-  --score-red: #EF4444;
-}
+@layer base {
+  body {
+    background-color: #FAFAF9;
+    color: #1C1917;
+    font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0C0A09; /* Stone 950 */
-    --foreground: #F7F5F0;
-    --card-bg: #1C1917; /* Stone 900 */
-    --card-border: #2E2A27; /* Stone 800 */
-    --accent: #F7F5F0;
-    --accent-foreground: #0C0A09;
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: #1C1917;
+      color: #FAFAF9;
+    }
   }
 }
 
-body {
-  color: var(--foreground);
-  background-color: var(--background);
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
+/* 1. Shimmer Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-/* Custom Leaflet Map Styling Override */
-.leaflet-container {
-  font-family: inherit;
-  background-color: var(--background) !important;
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 37%, #F5F5F4 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
 }
 
-/* Make map attribution very minimal and compact */
-.leaflet-control-attribution {
-  font-size: 9px !important;
-  background: rgba(255, 255, 255, 0.4) !important;
-  backdrop-filter: blur(4px);
-  border-radius: 4px;
-  color: #78716C !important;
+@media (prefers-color-scheme: dark) {
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #292524 25%, #3D3835 37%, #292524 63%);
+    background-size: 200% 100%;
+  }
 }
 
-.leaflet-bar {
-  border: 1px solid var(--card-border) !important;
-  box-shadow: none !important;
-  border-radius: 8px !important;
-  overflow: hidden;
+/* 2. Pulsing Blue User Location Dot */
+@keyframes pulse-blue {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.6);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+  }
 }
 
-.leaflet-bar a {
-  background-color: var(--card-bg) !important;
-  color: var(--foreground) !important;
-  border-bottom: 1px solid var(--card-border) !important;
-}
-
-.leaflet-bar a:hover {
-  background-color: var(--background) !important;
-}
-
-/* Hide zoom controls for an ultra-clean map if desired, or position nicely */
-.leaflet-top.leaflet-left {
-  margin-top: 12px;
-  margin-left: 12px;
-}
-
-/* Custom Marker Styling */
-.custom-leaflet-icon,
-.custom-leaflet-icon-pill {
-  background: transparent !important;
-  border: none !important;
-}
-
-.custom-map-marker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
-.marker-pin {
-  width: 24px;
-  height: 24px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 2px solid white;
-}
-
-.marker-pin-inner {
-  width: 10px;
-  height: 10px;
+.user-pulse-dot {
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background-color: white;
+  background: #0EA5E9;
+  border: 2px solid white;
+  animation: pulse-blue 2.2s ease-in-out infinite;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Hide scrollbar on components but keep function */
+/* 3. Hide Scrollbar Utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -115,133 +77,108 @@ body {
   scrollbar-width: none;
 }
 
-/* Safe Bottom-Sheet Slide Animation */
-@keyframes appleSheetEnter {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+/* 4. Safe bottom and scroll-chain controls */
+.page-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
-.animate-sheet-enter {
-  animation: appleSheetEnter 280ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-/* Glassmorphism Header Effect */
-.glass-header {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.scrolled-header {
-  border-bottom: 1px solid rgba(231, 229, 228, 0.6) !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+/* Custom leaflet map fixes */
+.leaflet-container {
+  font-family: var(--font-dm-sans), sans-serif;
+  background-color: #F5F5F4 !important;
 }
 
 @media (prefers-color-scheme: dark) {
-  .glass-header {
-    background: rgba(12, 10, 9, 0.85) !important;
-  }
-  .scrolled-header {
-    border-bottom: 1px solid rgba(46, 42, 39, 0.6) !important;
+  .leaflet-container {
+    background-color: #292524 !important;
   }
 }
 
-/* Custom Verification Pulse Animation */
-@keyframes pulse-check {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.95); }
+/* Ensure leaflet controls use our colors and curves */
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
 }
 
-.animate-pulse-check {
-  animation: pulse-check 2s ease-in-out infinite;
+.leaflet-bar a {
+  background-color: #FFFFFF !important;
+  color: #1C1917 !important;
+  border-bottom: 1px solid #E7E5E4 !important;
 }
 
-/* Scrollbar Hide class for filters */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.leaflet-bar a:hover {
+  background-color: #F5F5F4 !important;
 }
 
-/* Page fade in */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 200ms ease-out forwards;
+/* Drag handle indicator */
+.drawer-handle {
+  width: 36px;
+  height: 5px;
+  background-color: rgba(60, 60, 67, 0.3);
+  border-radius: 2.5px;
+  margin: 10px auto;
 }
 
-/* Location pulse dot */
-@keyframes locationPulse {
-  0%   { transform: scale(1); opacity: 1; }
-  70%  { transform: scale(2.8); opacity: 0; }
+@media (prefers-color-scheme: dark) {
+  .drawer-handle {
+    background-color: rgba(255, 255, 255, 0.24);
+  }
+}
+
+/* User pulsing dot animation (Section 2e) */
+@keyframes location-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  70% { transform: scale(2.5); opacity: 0; }
   100% { transform: scale(1); opacity: 0; }
 }
-.location-ring {
-  animation: locationPulse 2s ease-out infinite;
+
+.animate-location-pulse {
+  animation: location-pulse 2s ease-out infinite;
 }
 
-/* Verification badge pulse */
-@keyframes badgePulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.65; }
-}
-.badge-pulse {
-  animation: badgePulse 2s ease-in-out infinite;
-}
-
-/* Toast notification */
-@keyframes toastIn {
-  from { opacity: 0; transform: translateY(-12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes toastOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-12px); }
-}
-.toast-enter { animation: toastIn 200ms ease-out forwards; }
-.toast-exit  { animation: toastOut 150ms ease-in forwards; }
-
-/* Bottom sheet sliding transitions */
-.sheet-enter {
-  animation: sheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards;
-}
-.sheet-exit {
-  animation: sheetDown 200ms ease-in forwards;
-}
-@keyframes sheetUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-@keyframes sheetDown {
-  from { transform: translateY(0); }
-  to   { transform: translateY(100%); }
+/* Toast animation (Section 6d) */
+@keyframes toast-slide-down {
+  0% { transform: translate(-50%, -1rem); opacity: 0; }
+  15% { transform: translate(-50%, 0); opacity: 1; }
+  85% { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, -0.5rem); opacity: 0; }
 }
 
-/* Backdrop fade in */
-@keyframes backdropIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.backdrop-enter {
-  animation: backdropIn 280ms ease-out forwards;
+.animate-toast-slide-down {
+  animation: toast-slide-down 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Accessibility and Prefers Reduced Motion rules */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
+/* iOS Safari Input Zoom Fix (Section 6b) */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+/* 100dvh viewport definition (Section 6b) */
+.h-dvh {
+  height: 100dvh;
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaflet-bar a {
+    background-color: #292524 !important;
+    color: #FAFAF9 !important;
+    border-bottom: 1px solid #3D3835 !important;
+  }
+  .leaflet-bar a:hover {
+    background-color: #44403C !important;
   }
 }
 
+/* Shake animation for validation failures */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}

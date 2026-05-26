@@ -1,17 +1,6 @@
 -- SafeToilets Supabase Setup SQL DDL
 -- Paste this script into your Supabase SQL Editor to configure the database schema, RLS, and rate-limiting triggers.
 
--- Clean up existing tables and functions to allow clean reinstall/reset
-drop table if exists public.admin_actions cascade;
-drop table if exists public.reports cascade;
-drop table if exists public.restroom_verifications cascade;
-drop table if exists public.restrooms cascade;
-drop table if exists public.profiles cascade;
-
-drop function if exists public.handle_new_user() cascade;
-drop function if exists public.update_restroom_averages() cascade;
-drop function if exists public.check_contribution_rate_limit() cascade;
-
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
@@ -297,25 +286,20 @@ alter table public.admin_actions enable row level security;
 create policy "Allow public read for profiles" on public.profiles
   for select using (true);
 
-create policy "Allow users to insert own profile" on public.profiles
-  for insert with check (auth.uid() = id);
-
 create policy "Allow users to update own profile" on public.profiles
   for update using (auth.uid() = id);
 
-create policy "Admins can update profiles" on public.profiles
-  for update using (
-    (select is_admin from public.profiles where id = auth.uid()) = true
-  );
-
-create policy "Admins can delete profiles" on public.profiles
-  for delete using (
-    (select is_admin from public.profiles where id = auth.uid()) = true
+create policy "Admins can do everything on profiles" on public.profiles
+  for all using (
+    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
   );
 
 -- Restrooms Policies
 create policy "Allow public read for unhidden restrooms" on public.restrooms
   for select using (is_hidden = false);
+
+create policy "Allow users to read their own restrooms" on public.restrooms
+  for select using (auth.uid() = created_by);
 
 create policy "Allow admins to read all restrooms" on public.restrooms
   for select using (
