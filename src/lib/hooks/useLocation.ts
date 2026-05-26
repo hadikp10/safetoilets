@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from "react";
 
 export interface LocationState {
@@ -42,56 +44,70 @@ export function useLocation(options?: PositionOptions) {
 
   const getPosition = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
+      const errorMsg = "Geolocation is not supported by your browser.";
+      console.error(errorMsg);
       setState((prev) => ({
         ...prev,
-        error: "Geolocation is not supported by your browser.",
+        error: errorMsg,
         loading: false,
       }));
       return;
     }
 
     setState((prev) => ({ ...prev, loading: true, error: null }));
+    console.log("Invoking navigator.geolocation.getCurrentPosition()...");
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        const inKerala = isCoordsInKerala(latitude, longitude);
-        
-        setState({
-          latitude,
-          longitude,
-          accuracy,
-          error: null,
-          loading: false,
-          isWithinKerala: inKerala,
-        });
-      },
-      (error) => {
-        let errorMsg = "Unable to retrieve your location.";
-        switch (error.code) {
-          case 1:
-            errorMsg = "Location access was denied.";
-            break;
-          case 2:
-            errorMsg = "Location access was denied. Please enable location settings.";
-            break;
-          case 3:
-            errorMsg = "Getting your location is taking longer than usual. Please check your GPS signal and connection.";
-            break;
+    try {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Geolocation successfully fetched position:", position);
+          const { latitude, longitude, accuracy } = position.coords;
+          const inKerala = isCoordsInKerala(latitude, longitude);
+          
+          setState({
+            latitude,
+            longitude,
+            accuracy,
+            error: null,
+            loading: false,
+            isWithinKerala: inKerala,
+          });
+        },
+        (error) => {
+          console.error("Geolocation callback error:", error);
+          let errorMsg = "Unable to retrieve your location.";
+          switch (error.code) {
+            case 1:
+              errorMsg = "Location access was denied.";
+              break;
+            case 2:
+              errorMsg = "Location access was denied. Please enable location settings.";
+              break;
+            case 3:
+              errorMsg = "Getting your location is taking longer than usual. Please check your GPS signal and connection.";
+              break;
+          }
+          setState((prev) => ({
+            ...prev,
+            error: errorMsg,
+            loading: false,
+          }));
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 15000,
+          maximumAge: 60000,
+          ...options,
         }
-        setState((prev) => ({
-          ...prev,
-          error: errorMsg,
-          loading: false,
-        }));
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 60000,
-        ...options,
-      }
-    );
+      );
+    } catch (err) {
+      console.error("Geolocation synchronous invocation error:", err);
+      setState((prev) => ({
+        ...prev,
+        error: (err as Error).message || "Synchronous error invoking Geolocation API.",
+        loading: false,
+      }));
+    }
   }, [options]);
 
   return { ...state, getPosition, setState };

@@ -29,7 +29,7 @@ export default function MapView({
   const userMarkerRef = useRef<L.Marker | null>(null);
   const additionMarkerRef = useRef<L.Marker | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const hasFlownRef = useRef(false);
+  const lastFlownRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   // Fix webpack marker icon issues (Section 3d)
   useEffect(() => {
@@ -122,15 +122,18 @@ export default function MapView({
     };
   }, [map]);
 
-  // Fly to user coordinates on first location load (Section 2d)
+  // Fly to user coordinates whenever a new location is fetched (Section 2d)
   useEffect(() => {
     if (!map || !userCoords) return;
-    if (!hasFlownRef.current) {
+    const isNew = !lastFlownRef.current || 
+                  lastFlownRef.current.latitude !== userCoords.latitude || 
+                  lastFlownRef.current.longitude !== userCoords.longitude;
+    if (isNew) {
       map.flyTo([userCoords.latitude, userCoords.longitude], 15, {
         animate: true,
         duration: 1.5,
       });
-      hasFlownRef.current = true;
+      lastFlownRef.current = userCoords;
     }
   }, [map, userCoords]);
 
