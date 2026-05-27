@@ -51,6 +51,30 @@ export default function ToiletDetailPage({ params }: { params: { id: string } })
     window.open(url, "_blank");
   };
 
+  const handleShare = async () => {
+    if (!toilet) return;
+    const shareData = {
+      title: `${toilet.name} | SafeToilets`,
+      text: `Find public restroom "${toilet.name}" at ${toilet.location_name} in Kerala.`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("Link copied to clipboard!", "success");
+      } catch {
+        showToast("Failed to copy link.", "error");
+      }
+    }
+  };
+
   // Verify/Update Click Action
   const handleVerifyClick = () => {
     if (isAuthenticated) {
@@ -302,13 +326,24 @@ export default function ToiletDetailPage({ params }: { params: { id: string } })
 
         {/* Action Buttons */}
         <div className="mt-6 flex flex-col gap-2">
-          <button
-            onClick={handleGetDirections}
-            className="w-full h-[46px] bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium rounded-xl flex items-center justify-center gap-2 transition-colors shadow-button"
-          >
-            <Navigation className="w-4 h-4 text-white" strokeWidth={1.5} />
-            Get Directions
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleGetDirections}
+              className="flex-1 h-[46px] bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium rounded-xl flex items-center justify-center gap-2 transition-colors shadow-button"
+            >
+              <Navigation className="w-4 h-4 text-white" strokeWidth={1.5} />
+              Get Directions
+            </button>
+            <button
+              onClick={handleShare}
+              className="w-12 h-[46px] bg-transparent border border-[#E9E9E7] text-[#191919] hover:bg-[#EFEEEB] rounded-xl flex items-center justify-center transition-colors"
+              title="Share Restroom"
+            >
+              <svg className="w-4.5 h-4.5 text-[#191919]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l4.632-2.316m0 7.148l-4.632-2.316M21 12a3 3 0 11-6 0 3 3 0 016 0zm-11-6a3 3 0 11-6 0 3 3 0 016 0zm0 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
 
           <button
             onClick={handleVerifyClick}

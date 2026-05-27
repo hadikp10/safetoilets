@@ -28,15 +28,57 @@ function getInitials(name?: string | null): string {
   return parts[0][0].toUpperCase();
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 export default function HomePage() {
   const { isAuthenticated, loading: authLoading, profile, logout } = useSupabase();
   const { latitude, longitude, error: geoError, loading: geoLoading, getPosition, setState: setGeoState } = useLocation();
 
-  const [filter, setFilter] = useState("all");
+  const [activeFilters, setActiveFilters] = useState<string[]>(["all"]);
   const [mobileView, setMobileView] = useState<"both" | "map" | "list">("both");
   const [mapBounds, setMapBounds] = useState<{ minLat: number; maxLat: number; minLng: number; maxLng: number } | null>(null);
   const [selectedToilet, setSelectedToilet] = useState<Restroom | null>(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const savedView = localStorage.getItem("safetoilets_view_preference");
+    if (savedView === "both" || savedView === "map" || savedView === "list") {
+      setMobileView(savedView);
+    }
+  }, []);
+
+  const handleViewChange = (view: "both" | "map" | "list") => {
+    setMobileView(view);
+    localStorage.setItem("safetoilets_view_preference", view);
+  };
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      console.log("User accepted the install prompt");
+    }
+    setDeferredPrompt(null);
+    setShowInstallBanner(false);
+  };
 
   // Auto trigger location check on startup if permission previously granted
   useEffect(() => {
@@ -66,20 +108,35 @@ export default function HomePage() {
   }, [getPosition]);
 
   // Fetch toilets within current map bounds using SWR
-  const { toilets, isLoading: toiletsLoading, error: toiletsError, mutate } = useNearbyToilets(mapBounds, filter);
+  const { toilets, isLoading: toiletsLoading, error: toiletsError, mutate } = useNearbyToilets(mapBounds, activeFilters);
 
-  // Compute distances relative to user coords
+  // Compute distances relative to user coords or map center
   const getSortedToilets = () => {
-    if (!latitude || !longitude) return toilets;
+    let refLat = latitude;
+    let refLng = longitude;
+
+    if (!refLat || !refLng) {
+      if (mapBounds) {
+        refLat = (mapBounds.minLat + mapBounds.maxLat) / 2;
+        refLng = (mapBounds.minLng + mapBounds.maxLng) / 2;
+      } else {
+        refLat = 9.9816;
+        refLng = 76.2999;
+      }
+    }
+
     return [...toilets].sort((a, b) => {
-      const distA = calculateDistance(latitude, longitude, a.latitude, a.longitude);
-      const distB = calculateDistance(latitude, longitude, b.latitude, b.longitude);
+      const distA = calculateDistance(refLat!, refLng!, a.latitude, a.longitude);
+      const distB = calculateDistance(refLat!, refLng!, b.latitude, b.longitude);
       return distA - distB;
     });
   };
 
   const sortedToilets = getSortedToilets();
-  const userCoords = latitude && longitude ? { latitude, longitude } : null;
+  const refCoords = latitude && longitude ? { latitude, longitude } : (mapBounds ? {
+    latitude: (mapBounds.minLat + mapBounds.maxLat) / 2,
+    longitude: (mapBounds.minLng + mapBounds.maxLng) / 2
+  } : null);
 
   return (
     <div className="min-h-screen bg-white text-[#191919] flex flex-col relative overflow-x-hidden animate-fadeIn">
@@ -88,7 +145,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-white/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-[#E9E9E7]/80">
         <div className="flex items-center">
           <Link href="/" className="text-[15px] font-semibold text-[#191919] tracking-tight">
-            SafeToilets
+            SafeToilets <span className="text-[#999999] font-normal">| Kerala</span>
           </Link>
         </div>
 
@@ -126,6 +183,33 @@ export default function HomePage() {
           </Link>
         </div>
       </header>
+
+      {/* PWA Install Banner */}
+      {showInstallBanner && (
+        <div className="mx-4 my-2 bg-[#F7F7F5] border border-[#E9E9E7] p-2.5 rounded-xl flex items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📲</span>
+            <div className="flex flex-col text-left">
+              <span className="text-xs font-semibold text-[#191919]">Install SafeToilets App</span>
+              <span className="text-[10px] text-[#6B6B6B]">Access restrooms quickly from your home screen</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleInstallClick}
+              className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[11px] font-semibold h-[28px] px-3 rounded-lg transition-colors active:scale-95"
+            >
+              Install
+            </button>
+            <button
+              onClick={() => setShowInstallBanner(false)}
+              className="text-[#6B6B6B] hover:text-[#191919] text-xs px-2 py-1 font-medium"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Geolocation Access Denied Banner */}
       {geoError && (
@@ -183,9 +267,9 @@ export default function HomePage() {
               selectedToilet={selectedToilet}
               onSelectToilet={(toilet) => {
                 setSelectedToilet(toilet);
-                setMobileView("list");
+                handleViewChange("list");
               }}
-              userCoords={userCoords}
+              userCoords={latitude && longitude ? { latitude, longitude } : null}
               isAddingMode={false}
               onBoundsChange={(bounds) => setMapBounds(bounds)}
             />
@@ -205,7 +289,7 @@ export default function HomePage() {
           }`}
         >
           {/* Filter Bar */}
-          <FilterPills activeFilter={filter} onChange={setFilter} />
+          <FilterPills activeFilters={activeFilters} onChange={setActiveFilters} />
 
           {/* List Header */}
           <div className="px-4 pt-6 pb-2 flex justify-between items-center bg-white flex-shrink-0">
@@ -230,7 +314,7 @@ export default function HomePage() {
               {/* List/Map toggle */}
               <div className="flex bg-[#F7F7F5] p-0.5 rounded-lg border border-[#E9E9E7]">
                 <button 
-                  onClick={() => setMobileView("map")} 
+                  onClick={() => handleViewChange("map")} 
                   className={`px-2 py-0.5 text-xs font-medium rounded transition ${
                     mobileView === "map" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
                   }`}
@@ -238,7 +322,7 @@ export default function HomePage() {
                   Map
                 </button>
                 <button 
-                  onClick={() => setMobileView("list")} 
+                  onClick={() => handleViewChange("list")} 
                   className={`px-2 py-0.5 text-xs font-medium rounded transition ${
                     mobileView === "list" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
                   }`}
@@ -246,7 +330,7 @@ export default function HomePage() {
                   List
                 </button>
                 <button 
-                  onClick={() => setMobileView("both")} 
+                  onClick={() => handleViewChange("both")} 
                   className={`hidden sm:block px-2 py-0.5 text-xs font-medium rounded transition ${
                     mobileView === "both" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
                   }`}
@@ -281,28 +365,46 @@ export default function HomePage() {
                 <SkeletonCard />
               </div>
             ) : sortedToilets.length === 0 ? (
-              /* Empty State (Notion style) */
-              <div className="py-16 flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono">
-                  ?
-                </div>
-                <h3 className="text-base font-medium text-[#191919]">No toilets here yet</h3>
-                <p className="text-sm text-[#6B6B6B] text-center max-w-[200px] leading-relaxed">
-                  Add the first one and help your community.
-                </p>
-                <Link href="/add" className="mt-2">
-                  <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors active:scale-[0.97]">
-                    + Add toilet
+              !activeFilters.includes("all") ? (
+                <div className="py-16 flex flex-col items-center gap-3 text-center px-4">
+                  <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono">
+                    📭
+                  </div>
+                  <h3 className="text-base font-medium text-[#191919]">No matching toilets</h3>
+                  <p className="text-sm text-[#6B6B6B] text-center max-w-[240px] leading-relaxed">
+                    No toilets match your selected filters. Try removing some filters to see results.
+                  </p>
+                  <button
+                    onClick={() => setActiveFilters(["all"])}
+                    className="mt-2 bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium h-[32px] px-4 rounded-lg transition-colors active:scale-[0.97]"
+                  >
+                    Clear Filters
                   </button>
-                </Link>
-              </div>
+                </div>
+              ) : (
+                /* Empty State (Notion style) */
+                <div className="py-16 flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono">
+                    ?
+                  </div>
+                  <h3 className="text-base font-medium text-[#191919]">No toilets here yet</h3>
+                  <p className="text-sm text-[#6B6B6B] text-center max-w-[200px] leading-relaxed">
+                    Add the first one and help your community.
+                  </p>
+                  <Link href="/add" className="mt-2">
+                    <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors active:scale-[0.97]">
+                      + Add toilet
+                    </button>
+                  </Link>
+                </div>
+              )
             ) : (
               <div className="bg-[#F7F7F5] rounded-2xl overflow-hidden border border-[#E9E9E7] mx-4 flex flex-col divide-y divide-[#E9E9E7]">
                 {sortedToilets.map((toilet) => (
                   <ToiletCard
                     key={toilet.id}
                     toilet={toilet}
-                    distance={userCoords ? calculateDistance(userCoords.latitude, userCoords.longitude, toilet.latitude, toilet.longitude) : null}
+                    distance={refCoords ? calculateDistance(refCoords.latitude, refCoords.longitude, toilet.latitude, toilet.longitude) : null}
                   />
                 ))}
               </div>

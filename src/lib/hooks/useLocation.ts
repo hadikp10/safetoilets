@@ -95,7 +95,7 @@ export function useLocation(options?: PositionOptions) {
         },
         {
           enableHighAccuracy: false,
-          timeout: 15000,
+          timeout: 5000,
           maximumAge: 60000,
           ...options,
         }

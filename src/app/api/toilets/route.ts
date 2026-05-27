@@ -7,7 +7,8 @@ export async function GET(req: Request) {
   const maxLat = searchParams.get("maxLat");
   const minLng = searchParams.get("minLng");
   const maxLng = searchParams.get("maxLng");
-  const filter = searchParams.get("filter"); // 'all' | 'clean' | 'womenSafe' | 'accessible' | 'twentyFourHours'
+  const filterParam = searchParams.get("filter"); // comma-separated filters
+  const filters = filterParam ? filterParam.split(",") : ["all"];
 
   const supabase = createServerSupabaseClient(req);
 
@@ -40,14 +41,17 @@ export async function GET(req: Request) {
     let filtered = restrooms || [];
 
     // Apply secondary filters
-    if (filter && filter !== "all") {
-      if (filter === "clean") {
+    if (filters.length > 0 && !filters.includes("all")) {
+      if (filters.includes("clean")) {
         filtered = filtered.filter((r) => r.overall_score >= 3.8);
-      } else if (filter === "womenSafe") {
+      }
+      if (filters.includes("womenSafe")) {
         filtered = filtered.filter((r) => r.avg_women_safety >= 3.8 && (r.gender_access === "Women" || r.gender_access === "Unisex" || r.gender_access === "Both"));
-      } else if (filter === "accessible") {
+      }
+      if (filters.includes("accessible")) {
         filtered = filtered.filter((r) => r.is_accessible === true);
-      } else if (filter === "twentyFourHours") {
+      }
+      if (filters.includes("twentyFourHours")) {
         // Approximate 24-hour access by filtering typical continuous utility categories
         filtered = filtered.filter((r) => r.type === "Petrol Pump" || r.type === "Railway / Bus Station");
       }

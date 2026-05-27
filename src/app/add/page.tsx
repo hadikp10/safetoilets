@@ -10,6 +10,7 @@ import { useToast } from "@/context/ToastContext";
 import MapSkeleton from "@/components/Map/MapSkeleton";
 import imageCompression from "browser-image-compression";
 import { Restroom } from "@/types";
+import { ArrowLeft } from "lucide-react";
 
 const MapView = dynamic(() => import("@/components/Map/MapView"), {
   ssr: false,
@@ -64,6 +65,13 @@ export default function AddToiletPage() {
   const [duplicateToilet, setDuplicateToilet] = useState<{ id: string; name: string; latitude: number; longitude: number } | null>(null);
   const [dismissedDuplicate, setDismissedDuplicate] = useState(false);
 
+  // Manual Search and Geolocation Onboarding states
+  const [gpsAttempted, setGpsAttempted] = useState(false);
+  const [showGpsIntro, setShowGpsIntro] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<{ label: string; lat: number; lng: number }[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   // Guard routing check
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -72,12 +80,13 @@ export default function AddToiletPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // GPS auto-detect trigger on entering Step 1
+  // GPS auto-detect trigger on entering Step 1 (only after user dismisses intro and we haven't attempted yet)
   useEffect(() => {
-    if (step === 1 && latitude === null && longitude === null && !gpsLoading) {
+    if (step === 1 && latitude === null && longitude === null && !gpsLoading && !gpsError && !gpsAttempted && !showGpsIntro) {
+      setGpsAttempted(true);
       getPosition();
     }
-  }, [step, getPosition, latitude, longitude, gpsLoading]);
+  }, [step, getPosition, latitude, longitude, gpsLoading, gpsError, gpsAttempted, showGpsIntro]);
 
   // Update form fields when GPS finishes
   useEffect(() => {
@@ -208,6 +217,52 @@ export default function AddToiletPage() {
   if (!isAuthenticated) {
     return null;
   }
+
+  const handleSearchPlaces = async () => {
+    if (!searchQuery.trim()) return;
+    setSearchLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery
+        )}&limit=5&countrycodes=in`
+      );
+      if (res.ok) {
+        interface NominatimResult {
+          display_name: string;
+          lat: string;
+          lon: string;
+        }
+        const data = await res.json() as NominatimResult[];
+        const matches = data
+          .map((item) => ({
+            label: item.display_name,
+            lat: parseFloat(item.lat),
+            lng: parseFloat(item.lon),
+          }))
+          .filter((item) => isCoordsInKerala(item.lat, item.lng));
+        setSearchResults(matches);
+        if (matches.length === 0) {
+          setErrorMsg("No matching locations found in Kerala.");
+        }
+      } else {
+        throw new Error("Geocoding service failed.");
+      }
+    } catch (err) {
+      console.error("Search failed:", err);
+      setErrorMsg("Failed to search. Check your connection.");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSelectSearchResult = (res: { label: string; lat: number; lng: number }) => {
+    setLatitude(res.lat);
+    setLongitude(res.lng);
+    setSearchResults([]);
+    setSearchQuery("");
+  };
 
   const triggerShake = () => {
     setNextBtnShake(true);
@@ -421,7 +476,7 @@ export default function AddToiletPage() {
 
       setTimeout(() => {
         router.push(`/toilet/${responseData.id}`);
-      }, 1000);
+      }, 2000);
 
     } catch (err) {
       console.error(err);
@@ -465,22 +520,37 @@ export default function AddToiletPage() {
     );
   };
 
+  if (submitDone) {
+    return (
+      <div className="min-h-screen bg-white text-[#191919] flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto animate-fadeIn">
+        <div className="w-16 h-16 bg-[#EBFBEE] border border-[#2F9E44]/20 rounded-full flex items-center justify-center text-[#2F9E44] text-3xl shadow-sm mb-4 animate-bounce">
+          ✓
+        </div>
+        <h2 className="text-[20px] font-semibold text-[#191919]">Restroom Submitted!</h2>
+        <p className="text-[14px] text-[#6B6B6B] mt-2 max-w-xs leading-relaxed">
+          Thank you for contributing. Redirecting in 2 seconds...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-[#191919] flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll animate-fadeIn text-left">
       
       {/* Step Header */}
       <div className="flex flex-col pt-6 px-4">
         <div className="flex justify-between items-center">
+          <button
+            onClick={() => step > 1 ? handlePrev() : router.push("/")}
+            disabled={loading}
+            className="flex items-center gap-1 text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium min-h-[36px]"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{step > 1 ? "Back" : "Home"}</span>
+          </button>
           <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
             Step {step} of 8
           </span>
-          <button
-            onClick={() => router.push("/")}
-            disabled={loading}
-            className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium min-h-[36px]"
-          >
-            Cancel
-          </button>
         </div>
         <h1 className="text-[20px] font-semibold text-[#191919] tracking-tight leading-snug mt-1">
           {step === 1 && "Select location"}
@@ -513,12 +583,85 @@ export default function AddToiletPage() {
         
         {/* STEP 1: Select Location */}
         {step === 1 && (
-          <div className="flex-1 flex flex-col gap-4">
-            <p className="text-[14px] text-[#6B6B6B] leading-relaxed">
-              Drag the pin to place it exactly where the restroom is located.
-            </p>
+          showGpsIntro ? (
+            <div className="bg-white border border-[#E9E9E7] p-5 rounded-2xl flex flex-col gap-4 shadow-sm mt-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-[#EBFBEE] text-[#2F9E44] flex items-center justify-center text-xl mx-auto">
+                📍
+              </div>
+              <h3 className="text-base font-semibold text-[#191919]">Allow Location Access</h3>
+              <p className="text-sm text-[#6B6B6B] leading-relaxed">
+                SafeToilets needs GPS access to place the toilet pin accurately on the map. You can also search manually or drag the pin.
+              </p>
+              <div className="flex flex-col gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGpsIntro(false)}
+                  className="w-full h-11 bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium rounded-xl transition-colors shadow-button"
+                >
+                  Detect My Location
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGpsIntro(false);
+                    setGpsAttempted(true); // Don't trigger GPS automatically
+                  }}
+                  className="w-full h-11 bg-transparent border border-[#E9E9E7] hover:bg-[#EFEEEB] text-[#6B6B6B] text-[14px] font-medium rounded-xl transition-colors"
+                >
+                  Enter Location Manually
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">
+                  Search Location
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Search place in Kerala..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSearchPlaces();
+                      }
+                    }}
+                    className="flex-1 h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSearchPlaces}
+                    disabled={searchLoading}
+                    className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 rounded-lg transition-colors"
+                  >
+                    {searchLoading ? "Searching..." : "Search"}
+                  </button>
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="border border-[#E9E9E7] rounded-lg bg-white overflow-hidden divide-y divide-[#E9E9E7] shadow-sm max-h-40 overflow-y-auto">
+                    {searchResults.map((res, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSelectSearchResult(res)}
+                        className="w-full px-3 py-2 text-left text-xs hover:bg-[#F7F7F5] text-[#191919] transition-colors"
+                      >
+                        {res.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-[#E9E9E7] relative bg-[#F7F7F5] flex items-center justify-center">
+              <p className="text-[14px] text-[#6B6B6B] leading-relaxed">
+                Drag the pin to place it exactly where the restroom is located.
+              </p>
+
+              <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-[#E9E9E7] relative bg-[#F7F7F5] flex items-center justify-center">
               {gpsLoading && !latitude ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-8 h-8 rounded-full border-4 border-[#2F9E44] border-t-transparent animate-spin"></div>
@@ -578,6 +721,7 @@ export default function AddToiletPage() {
               Confirm Location
             </button>
           </div>
+          )
         )}
 
         {/* STEP 2: Name, Address and Category selection */}

@@ -21,7 +21,7 @@ async function apiFetch(url: string) {
 
 export function useNearbyToilets(
   bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number } | null,
-  filter: string
+  activeFilters: string[]
 ) {
   const queryParams = new URLSearchParams();
   if (bounds) {
@@ -30,7 +30,7 @@ export function useNearbyToilets(
     queryParams.append("minLng", bounds.minLng.toString());
     queryParams.append("maxLng", bounds.maxLng.toString());
   }
-  queryParams.append("filter", filter);
+  queryParams.append("filter", activeFilters.join(","));
 
   const url = `/api/toilets?${queryParams.toString()}`;
 
