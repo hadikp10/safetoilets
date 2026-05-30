@@ -474,6 +474,7 @@ export default function AddToiletPage() {
 
       showToast("✓ Toilet added! Thank you for contributing.", "success");
       sessionStorage.removeItem("add_toilet_form_state");
+      sessionStorage.setItem("last_submitted_toilet_id", responseData.id);
 
       setTimeout(() => {
         router.push(`/toilet/${responseData.id}`);

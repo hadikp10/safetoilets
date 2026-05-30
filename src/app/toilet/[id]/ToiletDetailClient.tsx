@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { useToiletDetail } from "@/lib/hooks/useToiletDetail";
 import { useSupabase } from "@/hooks/useSupabase";
 import { useToast } from "@/context/ToastContext";
 import BottomSheet from "@/components/ui/BottomSheet";
-import { Navigation, Star, Camera } from "lucide-react";
+import { Navigation, Star, Camera, Check, X } from "lucide-react";
 import { Restroom } from "@/types";
 
 // Dynamic map view for Leaflet SSR safety
@@ -35,6 +35,23 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
   const [showReportSheet, setShowReportSheet] = useState(false);
   const [reportReason, setReportReason] = useState<string>("wrong_image");
   const [reportLoading, setReportLoading] = useState(false);
+
+  // Post-contribution banner state
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const lastSubmitted = sessionStorage.getItem("last_submitted_toilet_id");
+      if (lastSubmitted === id) {
+        setShowSuccessBanner(true);
+      }
+    }
+  }, [id]);
+
+  const handleDismissBanner = () => {
+    setShowSuccessBanner(false);
+    sessionStorage.removeItem("last_submitted_toilet_id");
+  };
 
   // OS Native Maps Deep Linking
   const handleGetDirections = () => {
@@ -255,6 +272,71 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
       {/* Details Content Container */}
       <div className="px-4 pt-5 pb-8 flex-1 flex flex-col">
         
+        {/* Post-contribution Success Banner */}
+        {showSuccessBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            className="relative bg-brand-greenLight border border-brand-green/20 rounded-[20px] p-4 mb-4 flex flex-col gap-3 text-brand-greenText overflow-hidden"
+          >
+            {/* Dismiss button */}
+            <button 
+              onClick={handleDismissBanner}
+              className="absolute top-3 right-3 text-brand-greenText/50 hover:text-brand-greenText transition-colors"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-brand-green/10 flex items-center justify-center flex-shrink-0">
+                <Check className="w-3.5 h-3.5 text-brand-green" strokeWidth={3} />
+              </div>
+              <h3 className="text-sm font-semibold leading-none">Thanks for contributing!</h3>
+            </div>
+            
+            <p className="text-xs leading-relaxed text-brand-greenText/90 -mt-1">
+              Your submission helps people find clean toilets more easily.
+            </p>
+
+            <div className="flex flex-col gap-2 mt-1">
+              <Link href={`/?lat=${toilet.latitude}&lng=${toilet.longitude}`} onClick={handleDismissBanner}>
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
+                  className="w-full h-[40px] bg-brand-green hover:bg-brand-greenDark text-white text-xs font-medium rounded-xl flex items-center justify-center transition-colors shadow-sm"
+                >
+                  Explore Nearby Toilets
+                </motion.button>
+              </Link>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/add" onClick={handleDismissBanner}>
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.08 }}
+                    className="w-full h-[40px] bg-white border border-brand-green/20 hover:bg-brand-greenLight/50 text-brand-greenText text-xs font-medium rounded-xl flex items-center justify-center transition-colors"
+                  >
+                    Add Another Toilet
+                  </motion.button>
+                </Link>
+                
+                <Link href="/" onClick={handleDismissBanner}>
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.08 }}
+                    className="w-full h-[40px] bg-transparent border border-transparent hover:bg-brand-greenLight/30 text-brand-greenText/80 hover:text-brand-greenText text-xs font-medium rounded-xl flex items-center justify-center transition-colors"
+                  >
+                    Go Home
+                  </motion.button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Title Area */}
         <div className="mb-4">
           <h2 className="text-[20px] font-semibold text-neutral-900 tracking-tight leading-snug">

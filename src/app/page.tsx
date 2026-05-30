@@ -54,6 +54,29 @@ export default function HomePage() {
     }
   }, []);
 
+  // Check for map centering parameters (e.g. from post-contribution CTAs)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const latParam = searchParams.get("lat");
+      const lngParam = searchParams.get("lng");
+      if (latParam && lngParam) {
+        const latVal = parseFloat(latParam);
+        const lngVal = parseFloat(lngParam);
+        if (!isNaN(latVal) && !isNaN(lngVal)) {
+          setGeoState((prev) => ({
+            ...prev,
+            latitude: latVal,
+            longitude: lngVal,
+            isWithinKerala: true,
+            loading: false,
+            error: null,
+          }));
+        }
+      }
+    }
+  }, [setGeoState]);
+
   const handleViewChange = (view: "both" | "map" | "list") => {
     setMobileView(view);
     localStorage.setItem("safetoilets_view_preference", view);
@@ -85,6 +108,12 @@ export default function HomePage() {
   // Auto trigger location check on startup if permission previously granted
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("lat") && searchParams.get("lng")) {
+        // Skip auto geolocation if coordinates were supplied via query parameters
+        return;
+      }
+
       if (navigator.permissions && navigator.permissions.query) {
         navigator.permissions.query({ name: "geolocation" }).then((status) => {
           if (status.state === "granted") {
