@@ -1,6 +1,6 @@
 {
-  "name": "SafeToilets | Kerala",
-  "short_name": "SafeToilets | Kerala",
+  "name": "SafeToilets",
+  "short_name": "SafeToilets",
   "description": "Find clean public toilets near you in Kerala",
   "start_url": "/",
   "display": "standalone",

@@ -5,16 +5,16 @@ import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/context/ToastContext";
 
 export const metadata: Metadata = {
-  title: "SafeToilets | Kerala",
+  title: "SafeToilets",
   description: "Find clean public toilets near you in Kerala",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SafeToilets | Kerala",
+    title: "SafeToilets",
   },
   openGraph: {
-    title: "SafeToilets | Kerala",
+    title: "SafeToilets",
     description: "Find clean public toilets near you in Kerala",
     url: "https://safetoilets.in",
     siteName: "SafeToilets",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "SafeToilets | Kerala",
+    title: "SafeToilets",
     description: "Find clean public toilets near you in Kerala",
   },
 };

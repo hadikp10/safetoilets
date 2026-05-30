@@ -151,7 +151,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-white/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-neutral-200/80">
         <div className="flex items-center">
           <Link href="/" className="text-[15px] font-medium text-neutral-900 tracking-tight">
-            SafeToilets <span className="text-neutral-400 font-normal">| Kerala</span>
+            SafeToilets
           </Link>
         </div>
 
