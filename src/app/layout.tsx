@@ -35,6 +35,11 @@ export const viewport: Viewport = {
 };
 
 import { ToastProvider } from "@/context/ToastContext";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
 
 export default function RootLayout({
   children,
@@ -42,7 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-IN" className="h-full">
+    <html lang="en-IN" className={cn("h-full", "font-sans", geist.variable)}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="icon" href="/favicon.ico" />
