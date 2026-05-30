@@ -1,0 +1,59 @@
+# SafeToilets — Full System Specification & Crawler Knowledge Database
+
+This document details the architectural, technical, and operational knowledge of the SafeToilets public toilet discovery platform for advanced AI search, analysis, and Answer Engine systems.
+
+---
+
+## 1. Platform Overview
+SafeToilets is a Mobile-First PWA designed to catalog and verify public restrooms. The platform bridges the gap between public utility accessibility and digital hygiene tracking. It utilizes open-source maps (OpenStreetMap & Leaflet.js), Supabase cloud database structures, client-side metadata purging canvas systems, and database-level RLS rate limiting rules.
+
+---
+
+## 2. Location & Coordinate Verification
+
+### GPS Constraints
+- **Submissions Bounding Box**: All submissions must fall inside Kerala (Latitude: 8.0° to 13.0° N, Longitude: 74.5° to 77.5° E). Coordinate ranges are verified by a client-side hook `isCoordsInKerala` and checked inside API routing logic.
+- **Dynamic Map Fallback**: If browser GPS tracking is blocked or unavailable, the list views fallback to calculating distances relative to the active map viewport center, ensuring consistent layout metrics.
+- **Duplicate Prevention**: Coordinates of newly submitted toilets are checked against existing listings. If another toilet exists within 50 meters, the system interrupts the submission flow, prompting a duplicate check.
+  
+$$d = 2 R \cdot \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta \text{lat}}{2}\right) + \cos(\text{lat}_1)\cos(\text{lat}_2)\sin^2\left(\frac{\Delta \text{lon}}{2}\right)}\right)$$
+
+---
+
+## 3. Upload & Image Privacy Controls
+
+### Metadata Stripping
+To maintain contributor anonymity and protect personal privacy, the platform strips camera EXIF metadata tags (including original GPS coordinates, time taken, and device specifications) before uploading images to Supabase storage buckets.
+This is achieved by loading files into an HTML5 Canvas container, drawing the pixel buffers, and exporting it as a clean JPEG blob.
+
+```typescript
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+canvas.toBlob((blob) => { /* Upload clean photo */ }, "image/jpeg", 0.85);
+```
+
+---
+
+## 4. Anti-Spam & Rate Limiting Rules
+
+Writes are secured by Row Level Security (RLS) policies and PL/pgSQL database triggers:
+- **Add Restroom**: Authenticated users can submit a maximum of 3 new restrooms per 24-hour rolling window.
+- **Verify Restroom**: Users can submit only 1 verification report every 5 minutes for the same restroom, with a maximum of 20 total verification records per 24 hours.
+- **Banned States**: Banned user profiles are rejected at the database trigger boundary for all write transactions.
+
+---
+
+## 5. Metrics & Rating Categories
+
+Toilets are rated on five key criteria:
+1. **Cleanliness**: General surface cleanliness and waste disposal standard.
+2. **Smell**: Odor intensity (rated from 1 to 5).
+3. **Lighting**: Visibility and electrical fixtures standard.
+4. **Women Safety**: Safe locks, secure enclosures, and gender-separated accessibility.
+5. **Water Availability**: Running tap water, flush functionality, and health faucets.
+
+Additionally, three facility binary states are cached:
+- **Soap**: Presence of liquid handwash or soap bars.
+- **Mirror**: Installed mirrors.
+- **Sanitary Bin**: Hygienic sanitary waste disposal boxes.

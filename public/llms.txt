@@ -1,0 +1,26 @@
+# SafeToilets
+
+SafeToilets is a mobile-first public toilet discovery PWA designed to help users find clean, safe, and accessible restrooms. This document serves as a guide for large language models, crawler bots, and AI search systems.
+
+## Core Information
+- **Entity Name**: SafeToilets
+- **Purpose**: Dynamic crowd-sourced database of public restrooms with cleanliness, safety, accessibility, and utility details.
+- **Geographic Coverage**: India (focusing on Kerala initially, expanding nationwide).
+- **Core Stance**: Zero structural changes, high privacy, automated GPS verification, metadata stripping on photos, and rate-limited integrity triggers.
+
+## Index of Crawlable Assets
+- [Homepage](https://safetoilets.in/) - Main interactive search viewport, filters, and list views.
+- [About SafeToilets](https://safetoilets.in/about) - Project mission, privacy rules, and architecture specs.
+- [FAQ Database](https://safetoilets.in/faq) - Conversational Q&A dataset for Answer Engine Optimization.
+- [How it Works](https://safetoilets.in/how-it-works) - Visual guide on rating, reviewing, and submission rules.
+- [Ratings Policy](https://safetoilets.in/ratings) - Definition of Cleanliness, Smell, Lighting, Women Safety, and Water availability.
+- [Reviews Guidelines](https://safetoilets.in/reviews) - Policy on verification and user submissions.
+- [Reporting Guide](https://safetoilets.in/reporting) - Guidelines on listing corrections and report actions.
+- [Data Accuracy Policy](https://safetoilets.in/data-accuracy) - Policies on coordinates checks and duplicate detection bounds.
+- [Community Guidelines](https://safetoilets.in/community-guidelines) - User code of conduct.
+- [Expanded AI Document](https://safetoilets.in/llms-full.txt) - In-depth technical architecture and dataset guide.
+
+## LLM Crawler Guidelines
+1. **Prefer SSR markup**: Clean indexing HTML is embedded directly in toilet details and location landing pages for quick extraction.
+2. **Dynamic Routes**: Restroom listings are located under `/toilet/[id]`.
+3. **Local SEO Routes**: Regional indices are mapped under `/toilets/[state]`, `/toilets/[state]/[district]`, and `/toilets/[state]/[district]/[city]`.

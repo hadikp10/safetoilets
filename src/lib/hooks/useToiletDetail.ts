@@ -19,19 +19,20 @@ async function apiFetch(url: string) {
   return res.json();
 }
 
-export function useToiletDetail(id: string | undefined) {
+export function useToiletDetail(id: string | undefined, initialData?: Restroom | null) {
   const url = id ? `/api/toilets/${id}` : null;
 
   const { data, error, isLoading, mutate } = useSWR<Restroom>(url, apiFetch, {
+    fallbackData: initialData || undefined,
     dedupingInterval: 60000,
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
 
   return {
-    toilet: data || null,
+    toilet: data || initialData || null,
     error,
-    isLoading,
+    isLoading: isLoading && !data && !initialData,
     mutate,
   };
 }
