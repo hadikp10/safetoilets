@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useSupabase } from "@/hooks/useSupabase";
 import { useLocation, isCoordsInKerala } from "@/lib/hooks/useLocation";
 import { useToast } from "@/context/ToastContext";
 import MapSkeleton from "@/components/Map/MapSkeleton";
 import imageCompression from "browser-image-compression";
 import { Restroom } from "@/types";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star, Camera, Lock, Check, MapPin, AlertTriangle } from "lucide-react";
 
 const MapView = dynamic(() => import("@/components/Map/MapView"), {
   ssr: false,
@@ -205,8 +206,8 @@ export default function AddToiletPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <svg className="animate-spin h-6 w-6 text-[#2F9E44]" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <svg className="animate-spin h-6 w-6 text-brand-green" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
         </svg>
@@ -495,24 +496,29 @@ export default function AddToiletPage() {
   ) => {
     return (
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+        <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
           {label}
         </span>
         <div className="flex items-center gap-2">
           <div className="flex items-center">
             {[1, 2, 3, 4, 5].map((num) => (
-              <button
+              <motion.button
                 key={num}
                 type="button"
                 onClick={() => setValue(num)}
-                className="w-11 h-11 flex items-center justify-center text-[28px] focus:outline-none transition-transform active:scale-90"
-                style={{ color: num <= value ? "#2F9E44" : "#E9E9E7" }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className="w-11 h-11 flex items-center justify-center focus:outline-none"
               >
-                ★
-              </button>
+                <Star
+                  className={`w-6 h-6 fill-current ${
+                    num <= value ? "text-brand-yellow" : "text-neutral-200"
+                  }`}
+                />
+              </motion.button>
             ))}
           </div>
-          <span className="font-mono text-base font-semibold text-[#191919] ml-2">
+          <span className="font-mono text-base font-normal text-neutral-900 ml-2">
             {value > 0 ? `${value}.0` : "—"}
           </span>
         </div>
@@ -522,37 +528,49 @@ export default function AddToiletPage() {
 
   if (submitDone) {
     return (
-      <div className="min-h-screen bg-white text-[#191919] flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto animate-fadeIn">
-        <div className="w-16 h-16 bg-[#EBFBEE] border border-[#2F9E44]/20 rounded-full flex items-center justify-center text-[#2F9E44] text-3xl shadow-sm mb-4 animate-bounce">
-          ✓
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+        className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto"
+      >
+        <div className="w-16 h-16 bg-brand-greenLight border border-brand-green/20 rounded-full flex items-center justify-center text-brand-greenText text-3xl shadow-card mb-4">
+          <Check className="w-6 h-6 text-brand-green" />
         </div>
-        <h2 className="text-[20px] font-semibold text-[#191919]">Restroom Submitted!</h2>
-        <p className="text-[14px] text-[#6B6B6B] mt-2 max-w-xs leading-relaxed">
+        <h2 className="text-[20px] font-semibold text-neutral-900">Restroom Submitted!</h2>
+        <p className="text-[14px] text-neutral-600 mt-2 max-w-xs leading-relaxed">
           Thank you for contributing. Redirecting in 2 seconds...
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#191919] flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll animate-fadeIn text-left">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll text-left"
+    >
       
       {/* Step Header */}
       <div className="flex flex-col pt-6 px-4">
         <div className="flex justify-between items-center">
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.08 }}
             onClick={() => step > 1 ? handlePrev() : router.push("/")}
             disabled={loading}
-            className="flex items-center gap-1 text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium min-h-[36px]"
+            className="flex items-center gap-1 text-[13px] text-neutral-600 hover:text-neutral-900 font-medium min-h-[36px]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{step > 1 ? "Back" : "Home"}</span>
-          </button>
-          <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+          </motion.button>
+          <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
             Step {step} of 8
           </span>
         </div>
-        <h1 className="text-[20px] font-semibold text-[#191919] tracking-tight leading-snug mt-1">
+        <h1 className="text-[20px] font-semibold text-neutral-900 tracking-tight leading-snug mt-1">
           {step === 1 && "Select location"}
           {step === 2 && "Restroom details"}
           {step === 3 && "Gender access"}
@@ -565,15 +583,15 @@ export default function AddToiletPage() {
       </div>
 
       {/* Thin document progress style */}
-      <div className="w-full h-[2px] bg-[#E9E9E7] relative">
+      <div className="w-full h-[2px] bg-neutral-200 relative">
         <div 
-          className="h-full bg-[#2F9E44] transition-all duration-300"
+          className="h-full bg-brand-green transition-all duration-300"
           style={{ width: `${(step / 8) * 100}%` }}
         />
       </div>
 
       {errorMsg && (
-        <div className="mx-4 bg-[#FFF0F0] border border-[#E03131]/30 text-[#C21010] p-3 rounded-lg text-xs font-semibold animate-fadeIn">
+        <div className="mx-4 bg-brand-coralLight border border-brand-coral/20 text-brand-coralText p-3 rounded-[14px] text-xs font-normal">
           {errorMsg}
         </div>
       )}
@@ -584,38 +602,42 @@ export default function AddToiletPage() {
         {/* STEP 1: Select Location */}
         {step === 1 && (
           showGpsIntro ? (
-            <div className="bg-white border border-[#E9E9E7] p-5 rounded-2xl flex flex-col gap-4 shadow-sm mt-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-[#EBFBEE] text-[#2F9E44] flex items-center justify-center text-xl mx-auto">
-                📍
+            <div className="bg-white border border-neutral-200 p-5 rounded-[20px] flex flex-col gap-4 shadow-card mt-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-brand-greenLight text-brand-greenText flex items-center justify-center mx-auto">
+                <MapPin className="w-5 h-5 text-brand-green" />
               </div>
-              <h3 className="text-base font-semibold text-[#191919]">Allow Location Access</h3>
-              <p className="text-sm text-[#6B6B6B] leading-relaxed">
+              <h3 className="text-base font-medium text-neutral-900">Allow Location Access</h3>
+              <p className="text-sm text-neutral-600 leading-relaxed">
                 SafeToilets needs GPS access to place the toilet pin accurately on the map. You can also search manually or drag the pin.
               </p>
               <div className="flex flex-col gap-2 mt-2">
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => setShowGpsIntro(false)}
-                  className="w-full h-11 bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium rounded-xl transition-colors shadow-button"
+                  className="w-full h-[52px] bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium rounded-[14px] transition-colors shadow-button"
                 >
                   Detect My Location
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => {
                     setShowGpsIntro(false);
                     setGpsAttempted(true); // Don't trigger GPS automatically
                   }}
-                  className="w-full h-11 bg-transparent border border-[#E9E9E7] hover:bg-[#EFEEEB] text-[#6B6B6B] text-[14px] font-medium rounded-xl transition-colors"
+                  className="w-full h-[52px] bg-transparent border border-neutral-200 hover:bg-neutral-50 text-neutral-600 text-[14px] font-medium rounded-[14px] transition-colors"
                 >
                   Enter Location Manually
-                </button>
+                </motion.button>
               </div>
             </div>
           ) : (
             <div className="flex-1 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">
+                <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400 block">
                   Search Location
                 </span>
                 <div className="flex gap-2">
@@ -630,25 +652,27 @@ export default function AddToiletPage() {
                         handleSearchPlaces();
                       }
                     }}
-                    className="flex-1 h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+                    className="flex-1 h-[48px] border-none bg-neutral-100 placeholder-neutral-400 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
                   />
-                  <button
+                  <motion.button
                     type="button"
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.08 }}
                     onClick={handleSearchPlaces}
                     disabled={searchLoading}
-                    className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 rounded-lg transition-colors"
+                    className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-[48px] px-4 rounded-[14px] transition-colors shadow-button"
                   >
                     {searchLoading ? "Searching..." : "Search"}
-                  </button>
+                  </motion.button>
                 </div>
                 {searchResults.length > 0 && (
-                  <div className="border border-[#E9E9E7] rounded-lg bg-white overflow-hidden divide-y divide-[#E9E9E7] shadow-sm max-h-40 overflow-y-auto">
+                  <div className="border border-neutral-200 rounded-[14px] bg-white overflow-hidden divide-y divide-neutral-200 shadow-card max-h-40 overflow-y-auto">
                     {searchResults.map((res, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => handleSelectSearchResult(res)}
-                        className="w-full px-3 py-2 text-left text-xs hover:bg-[#F7F7F5] text-[#191919] transition-colors"
+                        className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 text-neutral-900 transition-colors"
                       >
                         {res.label}
                       </button>
@@ -657,15 +681,15 @@ export default function AddToiletPage() {
                 )}
               </div>
 
-              <p className="text-[14px] text-[#6B6B6B] leading-relaxed">
+              <p className="text-[14px] text-neutral-600 leading-relaxed">
                 Drag the pin to place it exactly where the restroom is located.
               </p>
 
-              <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-[#E9E9E7] relative bg-[#F7F7F5] flex items-center justify-center">
+              <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-neutral-200 relative bg-neutral-100 flex items-center justify-center shadow-card">
               {gpsLoading && !latitude ? (
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-8 h-8 rounded-full border-4 border-[#2F9E44] border-t-transparent animate-spin"></div>
-                  <span className="text-xs text-[#6B6B6B]">Detecting GPS location...</span>
+                  <div className="w-8 h-8 rounded-full border-4 border-brand-green border-t-transparent animate-spin"></div>
+                  <span className="text-xs text-neutral-600">Detecting GPS location...</span>
                 </div>
               ) : (
                 <MapView
@@ -683,43 +707,51 @@ export default function AddToiletPage() {
             </div>
 
             {latitude && longitude && (
-              <div className="bg-[#F7F7F5] rounded-xl p-3 text-center text-xs font-mono border border-[#E9E9E7] text-[#6B6B6B]">
+              <div className="bg-neutral-100 rounded-[14px] p-3 text-center text-xs font-mono border border-neutral-200 text-neutral-600">
                 Position: {latitude.toFixed(5)}, {longitude.toFixed(5)}
               </div>
             )}
 
             {gpsError && (
-              <div className="text-xs text-[#C21010] font-semibold bg-[#FFF0F0] p-2.5 rounded-lg border border-[#E03131]/10 text-center">
-                📍 GPS detection failed. Tap on the map to place the pin manually.
+              <div className="text-xs text-brand-coralText font-normal bg-brand-coralLight p-2.5 rounded-[14px] border border-brand-coral/10 text-center">
+                GPS detection failed. Tap on the map to place the pin manually.
               </div>
             )}
 
             {duplicateToilet && !dismissedDuplicate && (
-              <div className="bg-[#FFF4E6] border border-[#E67700]/30 text-[#B85C00] p-3 rounded-lg text-xs font-semibold flex flex-col gap-2 animate-fadeIn">
+              <div className="bg-brand-yellowLight border border-brand-yellow/20 text-brand-yellowText p-3 rounded-[20px] text-xs font-normal flex flex-col gap-2 shadow-card">
                 <div className="flex items-start gap-2">
-                  <span className="text-base">⚠️</span>
+                  <AlertTriangle className="w-4 h-4 text-brand-yellow flex-shrink-0 mt-0.5" />
                   <div className="flex flex-col text-left">
                     <span>A toilet was already added nearby.</span>
-                    <span className="text-[#6B6B6B] font-medium">({duplicateToilet.name})</span>
+                    <span className="text-neutral-600 font-medium">({duplicateToilet.name})</span>
                   </div>
                 </div>
                 <div className="flex gap-2 justify-end mt-1">
-                  <Link href={`/toilet/${duplicateToilet.id}`} target="_blank" className="bg-[#E67700] hover:bg-[#B85C00] text-white px-3 py-1.5 rounded-lg font-medium text-center transition-colors">
+                  <Link href={`/toilet/${duplicateToilet.id}`} target="_blank" className="bg-brand-yellow hover:bg-brand-yellowText/20 text-brand-yellowText px-3 py-1.5 rounded-[14px] font-medium text-center transition-colors">
                     View existing
                   </Link>
-                  <button type="button" onClick={() => setDismissedDuplicate(true)} className="bg-white px-3 py-1.5 rounded-lg border border-[#E9E9E7] text-[#6B6B6B] font-medium transition-colors hover:bg-[#EFEEEB]">
+                  <motion.button 
+                    type="button" 
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.08 }}
+                    onClick={() => setDismissedDuplicate(true)} 
+                    className="bg-white px-3 py-1.5 rounded-[14px] border border-neutral-200 text-neutral-600 font-medium transition-colors hover:bg-neutral-50"
+                  >
                     Continue
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             )}
 
-            <button
+            <motion.button
               onClick={handleNext}
-              className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-all shadow-button mt-4 ${nextBtnShake ? "animate-shake" : ""}`}
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
+              className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-all shadow-button mt-4 ${nextBtnShake ? "animate-shake" : ""}`}
             >
               Confirm Location
-            </button>
+            </motion.button>
           </div>
           )
         )}
@@ -728,33 +760,33 @@ export default function AddToiletPage() {
         {step === 2 && (
           <div className="flex-1 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">Restroom Name</label>
+              <label className="text-[11px] font-normal tracking-wide uppercase text-neutral-400 block">Restroom Name</label>
               <input
                 type="text"
                 placeholder="e.g. Kozhikode Beach Public Toilet"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+                className="w-full h-[48px] border-none bg-neutral-100 placeholder-neutral-400 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">Address / Area Name</label>
+              <label className="text-[11px] font-normal tracking-wide uppercase text-neutral-400 block">Address / Area Name</label>
               <input
                 type="text"
                 placeholder="e.g. Beach Road (Near Main Walkway)"
                 value={locationName}
                 onChange={(e) => setLocationName(e.target.value)}
-                className="w-full h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+                className="w-full h-[48px] border-none bg-neutral-100 placeholder-neutral-400 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium tracking-widest uppercase text-[#999999] block">Bathroom Type</label>
+              <label className="text-[11px] font-normal tracking-wide uppercase text-neutral-400 block">Bathroom Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full h-11 border border-[#E9E9E7] bg-white rounded-lg px-4 text-[14px] text-[#191919] focus:outline-none focus:border-[#2F9E44] transition-colors"
+                className="w-full h-[48px] border-none bg-neutral-100 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
               >
                 <option value="Public Toilet">Public Toilet</option>
                 <option value="Petrol Pump">Petrol Pump</option>
@@ -766,20 +798,24 @@ export default function AddToiletPage() {
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
               >
                 Back
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handleNext}
-                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
               >
                 Next
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
@@ -787,45 +823,51 @@ export default function AddToiletPage() {
         {/* STEP 3: Gender Access */}
         {step === 3 && (
           <div className="flex-1 flex flex-col gap-4">
-            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Who is allowed to access this toilet?</p>
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Who is allowed to access this toilet?</p>
 
-            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+            <div className="flex flex-col border border-neutral-200 rounded-[14px] overflow-hidden divide-y divide-neutral-200">
               {["Men", "Women", "Unisex", "Both"].map((access) => (
-                <button
+                <motion.button
                   key={access}
                   type="button"
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => setGenderAccess(access)}
                   className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
-                    genderAccess === access ? "bg-[#EBFBEE]" : "bg-white"
+                    genderAccess === access ? "bg-brand-greenLight" : "bg-white"
                   }`}
                 >
                   <div 
                     className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                      genderAccess === access ? "border-[#2F9E44] bg-[#2F9E44]" : "border-[#D3D3CF] bg-white"
+                      genderAccess === access ? "border-brand-green bg-brand-green" : "border-neutral-400 bg-white"
                     }`}
                   >
                     {genderAccess === access && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-[14px] text-[#191919] font-normal">{access}</span>
-                </button>
+                  <span className="text-[14px] text-neutral-900 font-normal">{access}</span>
+                </motion.button>
               ))}
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
               >
                 Back
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handleNext}
-                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
               >
                 Next
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
@@ -833,45 +875,51 @@ export default function AddToiletPage() {
         {/* STEP 4: Toilet Style */}
         {step === 4 && (
           <div className="flex-1 flex flex-col gap-4">
-            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">What physical toilet type is installed?</p>
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">What physical toilet type is installed?</p>
 
-            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+            <div className="flex flex-col border border-neutral-200 rounded-[14px] overflow-hidden divide-y divide-neutral-200">
               {["Indian", "European", "Both"].map((style) => (
-                <button
+                <motion.button
                   key={style}
                   type="button"
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => setToiletType(style)}
                   className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
-                    toiletType === style ? "bg-[#EBFBEE]" : "bg-white"
+                    toiletType === style ? "bg-brand-greenLight" : "bg-white"
                   }`}
                 >
                   <div 
                     className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                      toiletType === style ? "border-[#2F9E44] bg-[#2F9E44]" : "border-[#D3D3CF] bg-white"
+                      toiletType === style ? "border-brand-green bg-brand-green" : "border-neutral-400 bg-white"
                     }`}
                   >
                     {toiletType === style && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-[14px] text-[#191919] font-normal">{style}</span>
-                </button>
+                  <span className="text-[14px] text-neutral-900 font-normal">{style}</span>
+                </motion.button>
               ))}
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
               >
                 Back
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handleNext}
-                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
               >
                 Next
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
@@ -879,51 +927,57 @@ export default function AddToiletPage() {
         {/* STEP 5: Accessibility */}
         {step === 5 && (
           <div className="flex-1 flex flex-col gap-4">
-            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Is there step-free access, wide doors, or grab rails?</p>
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Is there step-free access, wide doors, or grab rails?</p>
 
-            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
+            <div className="flex flex-col border border-neutral-200 rounded-[14px] overflow-hidden divide-y divide-neutral-200">
               {[
-                { key: "yes", val: true, label: "Yes, Wheelchair Accessible ♿" },
+                { key: "yes", val: true, label: "Yes, Wheelchair Accessible" },
                 { key: "no", val: false, label: "No / Unsure" }
               ].map((opt) => (
-                <button
+                <motion.button
                   key={opt.key}
                   type="button"
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => {
                     setAccessibilityAnswer(opt.key as "yes" | "no");
                     setIsAccessible(opt.val);
                   }}
                   className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
-                    accessibilityAnswer === opt.key ? "bg-[#EBFBEE]" : "bg-white"
+                    accessibilityAnswer === opt.key ? "bg-brand-greenLight" : "bg-white"
                   }`}
                 >
                   <div 
                     className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                      accessibilityAnswer === opt.key ? "border-[#2F9E44] bg-[#2F9E44]" : "border-[#D3D3CF] bg-white"
+                      accessibilityAnswer === opt.key ? "border-brand-green bg-brand-green" : "border-neutral-400 bg-white"
                     }`}
                   >
                     {accessibilityAnswer === opt.key && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-[14px] text-[#191919] font-normal">{opt.label}</span>
-                </button>
+                  <span className="text-[14px] text-neutral-900 font-normal">{opt.label}</span>
+                </motion.button>
               ))}
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
               >
                 Back
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handleNext}
-                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
               >
                 Next
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
@@ -931,7 +985,7 @@ export default function AddToiletPage() {
         {/* STEP 6: Star Ratings */}
         {step === 6 && (
           <div className="flex-1 flex flex-col gap-6">
-            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Rate each category (minimum 1 star required for each).</p>
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Rate each category (minimum 1 star required for each).</p>
 
             <div className="space-y-6">
               {renderStarSelector("Cleanliness", cleanliness, setCleanliness)}
@@ -942,20 +996,24 @@ export default function AddToiletPage() {
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
               >
                 Back
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handleNext}
-                className={`bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
               >
                 Next
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
@@ -963,55 +1021,59 @@ export default function AddToiletPage() {
         {/* STEP 7: Amenities Checklist */}
         {step === 7 && (
           <div className="flex-1 flex flex-col gap-4">
-            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Select all facilities present inside the restroom.</p>
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Select all facilities present inside the restroom.</p>
 
-            <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
-              <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
+            <div className="flex flex-col border border-neutral-200 rounded-[14px] overflow-hidden divide-y divide-neutral-200">
+              <label className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer transition select-none min-h-[40px]">
                 <input
                   type="checkbox"
                   checked={hasSoap}
                   onChange={(e) => setHasSoap(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
+                  className="w-4 h-4 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
                 />
-                <span className="text-[14px] font-normal text-[#191919]">Soap Available</span>
+                <span className="text-[14px] font-normal text-neutral-900">Soap Available</span>
               </label>
 
-              <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
+              <label className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer transition select-none min-h-[40px]">
                 <input
                   type="checkbox"
                   checked={hasMirror}
                   onChange={(e) => setHasMirror(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
+                  className="w-4 h-4 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
                 />
-                <span className="text-[14px] font-normal text-[#191919]">Mirror Installed</span>
+                <span className="text-[14px] font-normal text-neutral-900">Mirror Installed</span>
               </label>
 
-              <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
+              <label className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer transition select-none min-h-[40px]">
                 <input
                   type="checkbox"
                   checked={hasSanRoot}
                   onChange={(e) => setHasSanRoot(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
+                  className="w-4 h-4 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
                 />
-                <span className="text-[14px] font-normal text-[#191919]">Sanitary Pad Disposal Box</span>
+                <span className="text-[14px] font-normal text-neutral-900">Sanitary Pad Disposal Box</span>
               </label>
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
               >
                 Back
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handleNext}
-                className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button"
+                className="bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button"
               >
                 Next
-              </button>
+              </motion.button>
             </div>
           </div>
         )}
@@ -1019,7 +1081,7 @@ export default function AddToiletPage() {
         {/* STEP 8: Photo upload */}
         {step === 8 && (
           <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col gap-4">
-            <p className="text-xs text-[#6B6B6B] leading-relaxed -mt-2">Provide a clear photo to help others locate this toilet.</p>
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Provide a clear photo to help others locate this toilet.</p>
 
             <input
               type="file"
@@ -1032,10 +1094,12 @@ export default function AddToiletPage() {
             />
             
             {photoPreview ? (
-              <div className="relative w-full h-40 rounded-lg bg-[#F7F7F5] overflow-hidden border border-[#E9E9E7] flex items-center justify-center">
+              <div className="relative w-full h-40 rounded-[14px] bg-neutral-100 overflow-hidden border border-neutral-200 flex items-center justify-center">
                 <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => {
                     setPhoto(null);
                     setPhotoPreview(null);
@@ -1044,44 +1108,50 @@ export default function AddToiletPage() {
                   className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black transition-colors"
                 >
                   ✕
-                </button>
+                </motion.button>
               </div>
             ) : (
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={() => document.getElementById("add-toilet-file")?.click()}
                 disabled={loading}
-                className="w-full h-28 border-2 border-dashed border-[#E9E9E7] hover:border-[#2F9E44] rounded-lg flex flex-col items-center justify-center gap-1.5 text-[#6B6B6B] hover:bg-[#F7F7F5] transition-all min-h-[44px]"
+                className="w-full h-28 border-2 border-dashed border-neutral-200 hover:border-brand-green rounded-[14px] flex flex-col items-center justify-center gap-1.5 text-neutral-600 hover:bg-neutral-100 transition-all min-h-[44px]"
               >
-                <span className="text-2xl">📸</span>
-                <span className="text-xs font-semibold">Tap to Take / Select Photo</span>
-              </button>
+                <Camera className="w-6 h-6 text-neutral-400" />
+                <span className="text-xs font-medium">Tap to Take / Select Photo</span>
+              </motion.button>
             )}
 
             {/* Notion thin progress bar */}
             {uploadProgress > 0 && (
-              <div className="w-full bg-[#E9E9E7] h-[2px] overflow-hidden mt-2">
+              <div className="w-full bg-neutral-200 h-[2px] overflow-hidden mt-2">
                 <div
-                  className="bg-[#2F9E44] h-full transition-all duration-300"
+                  className="bg-brand-green h-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
             )}
 
             <div className="flex gap-3 pt-4">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={handlePrev}
                 disabled={loading}
-                className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors disabled:opacity-50"
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors disabled:opacity-50"
               >
                 Back
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="submit"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 disabled={loading}
-                className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button disabled:opacity-50"
+                className="bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -1098,7 +1168,7 @@ export default function AddToiletPage() {
                 ) : (
                   "Submit Toilet"
                 )}
-              </button>
+              </motion.button>
             </div>
           </form>
         )}
@@ -1106,24 +1176,27 @@ export default function AddToiletPage() {
 
       {/* Privacy processing Overlay */}
       {privacyStatus && (
-        <div className="fixed inset-0 z-[120] bg-white/95 flex flex-col items-center justify-center p-6 text-center animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[120] bg-white/95 flex flex-col items-center justify-center p-6 text-center"
+        >
           <div className="relative w-16 h-16 flex items-center justify-center mb-4">
-            <div className="absolute inset-0 bg-[#2F9E44]/10 rounded-full animate-ping"></div>
-            <div className="w-12 h-12 bg-[#2F9E44] rounded-full flex items-center justify-center text-white shadow-lg">
-              🔒
+            <div className="w-12 h-12 bg-brand-green rounded-full flex items-center justify-center text-white shadow-button">
+              <Lock className="w-5 h-5 text-white" />
             </div>
           </div>
-          <h3 className="font-semibold text-[#191919] text-sm">
+          <h3 className="font-semibold text-neutral-900 text-sm">
             {privacyStatus === "compressing" && "Compressing Photo..."}
             {privacyStatus === "scrubbing" && "Scrubbing GPS metadata tags..."}
             {privacyStatus === "securing" && "Uploading to vault..."}
           </h3>
-          <p className="text-xs text-[#6B6B6B] mt-1.5 max-w-xs leading-relaxed">
+          <p className="text-xs text-neutral-600 mt-1.5 max-w-xs leading-relaxed">
             SafeToilets strips camera metadata tags to keep your upload private.
           </p>
-        </div>
+        </motion.div>
       )}
 
-    </div>
+    </motion.div>
   );
 }

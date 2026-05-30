@@ -1,9 +1,8 @@
 import "@/styles/globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata, Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/react";
+import { ToastProvider } from "@/context/ToastContext";
 
 export const metadata: Metadata = {
   title: "SafeToilets | Kerala",
@@ -31,15 +30,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1.0,
-  themeColor: "#2F9E44",
+  themeColor: "#16C47F",
 };
-
-import { ToastProvider } from "@/context/ToastContext";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
 
 export default function RootLayout({
   children,
@@ -47,12 +39,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-IN" className={cn("h-full", "font-sans", geist.variable)}>
+    <html lang="en-IN" className="h-full">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans h-full bg-white text-[#191919]`}>
+      <body className="h-full bg-neutral-50 text-neutral-900 font-sans">
         <ToastProvider>
           {children}
           <Analytics />

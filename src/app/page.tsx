@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useSupabase } from "@/hooks/useSupabase";
 import { useLocation } from "@/lib/hooks/useLocation";
 import { useNearbyToilets } from "@/lib/hooks/useNearbyToilets";
@@ -12,6 +13,7 @@ import ToiletCard from "@/components/toilet/ToiletCard";
 import SkeletonCard from "@/components/ui/SkeletonCard";
 import MapSkeleton from "@/components/Map/MapSkeleton";
 import { Restroom } from "@/types";
+import { MapPin, Smartphone, Inbox } from "lucide-react";
 
 // Dynamic map view to prevent Leaflet SSR errors
 const MapView = dynamic(() => import("@/components/Map/MapView"), {
@@ -139,30 +141,34 @@ export default function HomePage() {
   } : null);
 
   return (
-    <div className="min-h-screen bg-white text-[#191919] flex flex-col relative overflow-x-hidden animate-fadeIn">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col relative overflow-x-hidden"
+    >
       
-      {/* Header Bar */}
-      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-white/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-[#E9E9E7]/80">
+      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-white/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-neutral-200/80">
         <div className="flex items-center">
-          <Link href="/" className="text-[15px] font-semibold text-[#191919] tracking-tight">
-            SafeToilets <span className="text-[#999999] font-normal">| Kerala</span>
+          <Link href="/" className="text-[15px] font-medium text-neutral-900 tracking-tight">
+            SafeToilets <span className="text-neutral-400 font-normal">| Kerala</span>
           </Link>
         </div>
 
         <div className="flex items-center gap-3 min-h-[32px]">
           {authLoading ? (
-            <div className="w-7 h-7 rounded-full bg-[#F5F5F4] animate-pulse" />
+            <div className="w-7 h-7 rounded-full bg-neutral-100 animate-pulse" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-2.5">
               <Link
                 href="/profile"
-                className="w-7 h-7 rounded-full bg-[#EBFBEE] text-[#1E6E2E] text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-[#d3f9d8]"
+                className="w-7 h-7 rounded-full bg-brand-greenLight text-brand-greenText text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-brand-greenLight/80"
               >
                 {getInitials(profile?.full_name)}
               </Link>
               <button
                 onClick={logout}
-                className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium transition-colors"
+                className="text-[13px] text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
               >
                 Logout
               </button>
@@ -170,57 +176,65 @@ export default function HomePage() {
           ) : (
             <Link
               href="/login"
-              className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium transition-colors"
+              className="text-[13px] text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
             >
               Sign in
             </Link>
           )}
 
           <Link href="/add">
-            <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium h-[32px] px-3 rounded-lg shadow-button transition-colors active:scale-[0.97]">
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
+              className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-[32px] px-3 rounded-lg shadow-button transition-colors"
+            >
               + Add
-            </button>
+            </motion.button>
           </Link>
         </div>
       </header>
 
       {/* PWA Install Banner */}
       {showInstallBanner && (
-        <div className="mx-4 my-2 bg-[#F7F7F5] border border-[#E9E9E7] p-2.5 rounded-xl flex items-center justify-between gap-3 animate-fadeIn">
+        <div className="mx-4 my-2 bg-neutral-100 border border-neutral-200 p-2.5 rounded-xl flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-lg">📲</span>
+            <Smartphone className="w-5 h-5 text-neutral-600" />
             <div className="flex flex-col text-left">
-              <span className="text-xs font-semibold text-[#191919]">Install SafeToilets App</span>
-              <span className="text-[10px] text-[#6B6B6B]">Access restrooms quickly from your home screen</span>
+              <span className="text-xs font-medium text-neutral-900">Install SafeToilets App</span>
+              <span className="text-[10px] text-neutral-600">Access restrooms quickly from your home screen</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <button
+            <motion.button
               onClick={handleInstallClick}
-              className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[11px] font-semibold h-[28px] px-3 rounded-lg transition-colors active:scale-95"
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
+              className="bg-brand-green hover:bg-brand-greenDark text-white text-[11px] font-medium h-[28px] px-3 rounded-lg transition-colors"
             >
               Install
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => setShowInstallBanner(false)}
-              className="text-[#6B6B6B] hover:text-[#191919] text-xs px-2 py-1 font-medium"
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
+              className="text-neutral-600 hover:text-neutral-900 text-xs px-2 py-1 font-medium"
             >
               Dismiss
-            </button>
+            </motion.button>
           </div>
         </div>
       )}
 
       {/* Geolocation Access Denied Banner */}
       {geoError && (
-        <div className="mx-4 my-3 bg-[#FFF4E6] text-[#B85C00] border border-[#E67700]/30 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm animate-fadeIn">
+        <div className="mx-4 my-3 bg-brand-yellowLight text-brand-yellowText border border-brand-yellow/30 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
           <div className="flex items-start gap-2.5">
-            <span className="text-xl">📍</span>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">
+            <MapPin className="w-5 h-5 text-brand-yellow" />
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-medium">
                 {geoError.toLowerCase().includes("denied") ? "Location access was denied." : "Location access issue"}
               </span>
-              <span className="text-xs text-[#6B6B6B] mt-0.5">{geoError}</span>
+              <span className="text-xs text-neutral-600 mt-0.5">{geoError}</span>
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -230,24 +244,32 @@ export default function HomePage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <button className="bg-[#E67700] hover:bg-[#B85C00] text-white text-xs font-semibold rounded-lg px-4 py-2 transition-colors active:scale-95">
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
+                  className="bg-brand-green hover:bg-brand-greenDark text-white text-xs font-medium rounded-lg px-4 py-2 transition-colors"
+                >
                   Open Settings to Enable
-                </button>
+                </motion.button>
               </a>
             ) : (
-              <button
+              <motion.button
                 onClick={getPosition}
-                className="bg-[#E67700] hover:bg-[#B85C00] text-white text-xs font-semibold rounded-lg px-4 py-2 transition-colors active:scale-95"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className="bg-brand-green hover:bg-brand-greenDark text-white text-xs font-medium rounded-lg px-4 py-2 transition-colors"
               >
                 Retry GPS
-              </button>
+              </motion.button>
             )}
-            <button
+            <motion.button
               onClick={() => setGeoState((prev) => ({ ...prev, error: null }))}
-              className="bg-white hover:bg-[#F7F7F5] text-[#B85C00] border border-[#E9E9E7] text-xs font-semibold rounded-lg px-4 py-2 transition-colors"
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
+              className="bg-white hover:bg-neutral-100 text-brand-yellowText border border-neutral-200 text-xs font-medium rounded-lg px-4 py-2 transition-colors"
             >
               Browse All Toilets in Kerala
-            </button>
+            </motion.button>
           </div>
         </div>
       )}
@@ -261,7 +283,7 @@ export default function HomePage() {
             mobileView === "list" ? "hidden sm:block" : "block"
           }`}
         >
-          <div className="h-[52vh] w-full rounded-b-[20px] overflow-hidden border-b border-[#E9E9E7] relative">
+          <div className="h-[52vh] w-full rounded-b-[20px] overflow-hidden border-b border-neutral-200 relative">
             <MapView
               toilets={toilets}
               selectedToilet={selectedToilet}
@@ -274,9 +296,9 @@ export default function HomePage() {
               onBoundsChange={(bounds) => setMapBounds(bounds)}
             />
             {geoLoading && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-white/95 px-3 py-1 rounded-full flex items-center gap-2 shadow-sm border border-[#E9E9E7] animate-pulse">
-                <div className="w-2 h-2 bg-[#2F9E44] rounded-full animate-ping" />
-                <span className="text-[10px] font-medium text-[#6B6B6B] uppercase tracking-wider">Locating...</span>
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-white/95 px-3 py-1 rounded-full flex items-center gap-2 shadow-sm border border-neutral-200">
+                <div className="w-2 h-2 bg-brand-green rounded-full animate-ping" />
+                <span className="text-[10px] font-medium text-neutral-600 uppercase tracking-wider">Locating...</span>
               </div>
             )}
           </div>
@@ -293,50 +315,58 @@ export default function HomePage() {
 
           {/* List Header */}
           <div className="px-4 pt-6 pb-2 flex justify-between items-center bg-white flex-shrink-0">
-            <div className="flex items-center gap-1.5 text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium tracking-widest uppercase text-neutral-400">
               <span>Nearby</span>
-              <span className="text-[#D3D3CF] font-normal">·</span>
+              <span className="text-neutral-200 font-normal">·</span>
               <span className="font-mono font-normal tracking-normal lowercase">{toiletsLoading ? "scanning..." : `${sortedToilets.length} found`}</span>
             </div>
             
             <div className="flex items-center gap-3">
-              <button 
+              <motion.button 
                 onClick={() => mutate()}
                 disabled={toiletsLoading}
-                className="text-[13px] text-[#6B6B6B] flex items-center gap-1 hover:text-[#191919] transition-colors disabled:opacity-50"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className="text-[13px] text-neutral-600 flex items-center gap-1 hover:text-neutral-900 transition-colors disabled:opacity-50"
               >
                 <span>Closest</span>
                 <svg className={`w-3.5 h-3.5 text-current ${toiletsLoading ? "animate-spin" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path d="m6 9 6 6 6-6"/>
                 </svg>
-              </button>
+              </motion.button>
 
               {/* List/Map toggle */}
-              <div className="flex bg-[#F7F7F5] p-0.5 rounded-lg border border-[#E9E9E7]">
-                <button 
+              <div className="flex bg-neutral-100 p-0.5 rounded-lg border border-neutral-200">
+                <motion.button 
                   onClick={() => handleViewChange("map")} 
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                    mobileView === "map" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
+                    mobileView === "map" ? "bg-white text-neutral-900 shadow-sm border border-neutral-200" : "text-neutral-600 hover:text-neutral-900"
                   }`}
                 >
                   Map
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
                   onClick={() => handleViewChange("list")} 
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                    mobileView === "list" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
+                    mobileView === "list" ? "bg-white text-neutral-900 shadow-sm border border-neutral-200" : "text-neutral-600 hover:text-neutral-900"
                   }`}
                 >
                   List
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
                   onClick={() => handleViewChange("both")} 
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   className={`hidden sm:block px-2 py-0.5 text-xs font-medium rounded transition ${
-                    mobileView === "both" ? "bg-white text-[#191919] shadow-sm border border-[#E9E9E7]" : "text-[#6B6B6B] hover:text-[#191919]"
+                    mobileView === "both" ? "bg-white text-neutral-900 shadow-sm border border-neutral-200" : "text-neutral-600 hover:text-neutral-900"
                   }`}
                 >
                   Both
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>
@@ -347,16 +377,18 @@ export default function HomePage() {
             style={{ height: "calc(100dvh - 52px - 52vh - 44px)" }}
           >
             {toiletsError ? (
-              <div className="mx-4 my-2 py-3 px-4 bg-[#FFF0F0] border border-[#E03131]/30 rounded-xl flex items-center gap-2">
-                <span className="text-[#C21010] text-xs flex-1">
+              <div className="mx-4 my-2 py-3 px-4 bg-brand-coralLight border border-brand-coral/30 rounded-xl flex items-center gap-2">
+                <span className="text-brand-coralText text-xs flex-1">
                   Couldn&apos;t load. Check connection.
                 </span>
-                <button 
-                  className="text-[#1971C2] text-xs font-medium px-2.5 py-1 rounded hover:bg-[#EFEEEB]"
+                <motion.button 
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
+                  className="text-brand-greenText text-xs font-medium px-2.5 py-1 rounded hover:bg-neutral-100"
                   onClick={() => mutate()}
                 >
                   Retry
-                </button>
+                </motion.button>
               </div>
             ) : toiletsLoading ? (
               <div className="px-4 space-y-3">
@@ -367,39 +399,52 @@ export default function HomePage() {
             ) : sortedToilets.length === 0 ? (
               !activeFilters.includes("all") ? (
                 <div className="py-16 flex flex-col items-center gap-3 text-center px-4">
-                  <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono">
-                    📭
+                  <div className="w-10 h-10 border border-neutral-200 rounded-xl flex items-center justify-center text-xl text-neutral-400">
+                    <Inbox className="w-5 h-5 text-neutral-400" />
                   </div>
-                  <h3 className="text-base font-medium text-[#191919]">No matching toilets</h3>
-                  <p className="text-sm text-[#6B6B6B] text-center max-w-[240px] leading-relaxed">
+                  <h3 className="text-base font-medium text-neutral-900">No matching toilets</h3>
+                  <p className="text-sm text-neutral-600 text-center max-w-[240px] leading-relaxed">
                     No toilets match your selected filters. Try removing some filters to see results.
                   </p>
-                  <button
+                  <motion.button
                     onClick={() => setActiveFilters(["all"])}
-                    className="mt-2 bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium h-[32px] px-4 rounded-lg transition-colors active:scale-[0.97]"
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.08 }}
+                    className="mt-2 bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-[32px] px-4 rounded-lg transition-colors"
                   >
                     Clear Filters
-                  </button>
+                  </motion.button>
                 </div>
               ) : (
                 /* Empty State (Notion style) */
                 <div className="py-16 flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono">
+                  <div className="w-10 h-10 border border-neutral-200 rounded-xl flex items-center justify-center text-xl text-neutral-400 font-mono">
                     ?
                   </div>
-                  <h3 className="text-base font-medium text-[#191919]">No toilets here yet</h3>
-                  <p className="text-sm text-[#6B6B6B] text-center max-w-[200px] leading-relaxed">
+                  <h3 className="text-base font-medium text-neutral-900">No toilets here yet</h3>
+                  <p className="text-sm text-neutral-600 text-center max-w-[200px] leading-relaxed">
                     Add the first one and help your community.
                   </p>
                   <Link href="/add" className="mt-2">
-                    <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors active:scale-[0.97]">
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ duration: 0.08 }}
+                      className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+                    >
                       + Add toilet
-                    </button>
+                    </motion.button>
                   </Link>
                 </div>
               )
             ) : (
-              <div className="bg-[#F7F7F5] rounded-2xl overflow-hidden border border-[#E9E9E7] mx-4 flex flex-col divide-y divide-[#E9E9E7]">
+              <motion.div
+                variants={{
+                  show: { transition: { staggerChildren: 0.055 } }
+                }}
+                initial="hidden"
+                animate="show"
+                className="bg-white rounded-[20px] overflow-hidden border border-neutral-200 mx-4 flex flex-col divide-y divide-neutral-200 shadow-card"
+              >
                 {sortedToilets.map((toilet) => (
                   <ToiletCard
                     key={toilet.id}
@@ -407,7 +452,7 @@ export default function HomePage() {
                     distance={refCoords ? calculateDistance(refCoords.latitude, refCoords.longitude, toilet.latitude, toilet.longitude) : null}
                   />
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
         </section>
@@ -417,14 +462,16 @@ export default function HomePage() {
       {/* Geolocation Permission Onboarding Modal */}
       {showLocationPrompt && (
         <div className="fixed inset-0 z-[120] bg-black/5 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-xl p-6 border border-[#E9E9E7] shadow-lg flex flex-col gap-4 text-left animate-fadeIn">
-            <h3 className="text-[18px] font-semibold text-[#191919]">Location Access</h3>
-            <p className="text-[14px] text-[#6B6B6B] leading-relaxed">
+          <div className="bg-white w-full max-w-sm rounded-xl p-6 border border-neutral-200 shadow-lg flex flex-col gap-4 text-left">
+            <h3 className="text-[18px] font-semibold text-neutral-900">Location Access</h3>
+            <p className="text-[14px] text-neutral-600 leading-relaxed">
               SafeToilets needs your location to find nearby toilets. Allow browser permission to continue.
             </p>
             <div className="flex flex-col gap-2 mt-2">
-              <button
-                className="w-full h-[40px] bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium rounded-lg transition-colors"
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className="w-full h-[40px] bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium rounded-lg transition-colors"
                 onClick={() => {
                   if (typeof window !== "undefined") {
                     localStorage.setItem("geolocation_allowed", "true");
@@ -434,20 +481,22 @@ export default function HomePage() {
                 }}
               >
                 Allow Location Access
-              </button>
-              <button
-                className="w-full h-[40px] bg-transparent border border-[#E9E9E7] hover:bg-[#EFEEEB] text-[#6B6B6B] text-[14px] font-medium rounded-lg transition-colors"
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className="w-full h-[40px] bg-transparent border border-neutral-200 hover:bg-neutral-100 text-neutral-600 text-[14px] font-medium rounded-lg transition-colors"
                 onClick={() => {
                   setShowLocationPrompt(false);
                 }}
               >
                 Browse Without Location
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
       )}
 
-    </div>
+    </motion.div>
   );
 }

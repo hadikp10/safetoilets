@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useSupabase } from "@/hooks/useSupabase";
 
 export default function LoginPage() {
@@ -32,8 +33,8 @@ export default function LoginPage() {
 
   if (loading && !authLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <svg className="animate-spin h-6 w-6 text-[#2F9E44]" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <svg className="animate-spin h-6 w-6 text-brand-green" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
         </svg>
@@ -46,27 +47,34 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#191919] flex flex-col justify-start px-4 pt-20 pb-8 animate-fadeIn">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col justify-start px-4 pt-20 pb-8"
+    >
       <div className="w-full max-w-[320px] mx-auto flex flex-col items-stretch">
         
         {/* Title / Brand */}
-        <h1 className="text-[24px] font-semibold text-[#191919] tracking-tight text-left">
+        <h1 className="text-[24px] font-semibold text-neutral-900 tracking-tight text-left">
           SafeToilets
         </h1>
         
         {/* Subtext */}
-        <p className="text-[14px] text-[#6B6B6B] mt-1 mb-10 text-left">
+        <p className="text-[14px] text-neutral-600 mt-1 mb-10 text-left">
           Find clean toilets near you in Kerala.
         </p>
 
         {/* Google Button */}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          transition={{ duration: 0.08 }}
           onClick={handleGoogleLogin}
           disabled={isBtnDisabled}
-          className="w-full h-[40px] rounded-lg bg-white border border-[#E9E9E7] shadow-sm flex items-center justify-center gap-3 px-4 hover:bg-[#F7F7F5] hover:border-[#D3D3CF] active:scale-[0.99] transition-all disabled:opacity-70 disabled:pointer-events-none"
+          className="w-full h-[52px] rounded-[14px] bg-white border border-neutral-200 shadow-button flex items-center justify-center gap-3 px-4 hover:bg-neutral-50 active:scale-[0.99] transition-all disabled:opacity-70 disabled:pointer-events-none"
         >
           {authLoading ? (
-            <svg className="animate-spin h-4 w-4 text-[#6B6B6B]" viewBox="0 0 24 24">
+            <svg className="animate-spin h-4 w-4 text-neutral-600" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
             </svg>
@@ -91,26 +99,26 @@ export default function LoginPage() {
                   fill="#EA4335"
                 />
               </svg>
-              <span className="text-[14px] font-medium text-[#191919]">
+              <span className="text-[14px] font-medium text-neutral-900">
                 Continue with Google
               </span>
             </>
           )}
-        </button>
+        </motion.button>
 
         {/* Legal Disclaimer */}
-        <p className="text-[11px] text-[#999999] text-center mt-6 leading-relaxed">
+        <p className="text-[11px] text-neutral-400 text-center mt-6 leading-relaxed">
           By signing in you agree to help keep SafeToilets accurate and respectful.
         </p>
 
         {/* Cancel/Browse link */}
         <Link
           href="/"
-          className="text-center text-xs font-medium text-[#6B6B6B] hover:text-[#191919] mt-8 transition-colors"
+          className="text-center text-xs font-medium text-neutral-600 hover:text-neutral-900 mt-8 transition-colors"
         >
           Cancel and return home
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 }

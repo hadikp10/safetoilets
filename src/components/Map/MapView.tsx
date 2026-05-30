@@ -153,13 +153,7 @@ export default function MapView({
         const color = selectedToilet.overall_score >= 4 ? "green" : selectedToilet.overall_score >= 2.5 ? "yellow" : "red";
         
         const pinIcon = L.divIcon({
-          className: "",
-          html: `<div style="
-            width:14px;height:14px;border-radius:50%;
-            background:${color === "green" ? "#2F9E44" : color === "yellow" ? "#E67700" : "#E03131"};
-            border:2px solid white;
-            box-shadow:0 2px 6px rgba(0,0,0,0.3);
-          "></div>`,
+          className: `w-3.5 h-3.5 rounded-full border-2 border-white shadow bg-brand-${color === "green" ? "green" : color === "yellow" ? "yellow" : "coral"}`,
           iconSize: [14, 14],
           iconAnchor: [7, 7],
         });
@@ -179,13 +173,7 @@ export default function MapView({
 
       // Div icon marker
       const customIcon = L.divIcon({
-        className: "",
-        html: `<div style="
-          width:14px;height:14px;border-radius:50%;
-          background:${color === "green" ? "#2F9E44" : color === "yellow" ? "#E67700" : "#E03131"};
-          border:2px solid white;
-          box-shadow:0 2px 6px rgba(0,0,0,0.3);
-        "></div>`,
+        className: `w-3.5 h-3.5 rounded-full border-2 border-white shadow bg-brand-${color === "green" ? "green" : color === "yellow" ? "yellow" : "coral"}`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
       });
@@ -248,9 +236,9 @@ export default function MapView({
         className: "",
         html: `
           <div class="flex flex-col items-center select-none" style="transform: translateY(-40px);">
-            <div style="background:#191919;color:white;padding:3px 8px;font-size:10px;font-weight:bold;border-radius:4px;box-shadow:0 2px 6px rgba(0,0,0,0.2);white-space:nowrap;margin-bottom:4px;">DRAG ME</div>
-            <div style="width:24px;height:24px;border-radius:50%;background:#191919;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
-              <div style="width:6px;height:6px;background:white;border-radius:50%;margin:auto;"></div>
+            <div class="bg-neutral-900 text-white px-2 py-0.5 text-[10px] font-medium rounded shadow-sm whitespace-nowrap mb-1 uppercase tracking-wide">DRAG ME</div>
+            <div class="w-6 h-6 rounded-full bg-neutral-900 border-2 border-white shadow-lg flex items-center justify-center">
+              <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
             </div>
           </div>
         `,

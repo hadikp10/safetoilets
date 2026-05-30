@@ -43,22 +43,22 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
 
       {/* Peek Bottom Sheet */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[20px] shadow-lg max-h-[80vh] overflow-y-auto no-scrollbar pb-[max(16px,env(safe-area-inset-bottom))] flex flex-col border-t border-[#E9E9E7] max-w-md mx-auto ${
+        className={`fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[20px] shadow-lg max-h-[80vh] overflow-y-auto no-scrollbar pb-[max(16px,env(safe-area-inset-bottom))] flex flex-col border-t border-neutral-200 max-w-md mx-auto ${
           isExiting ? "sheet-exit" : "sheet-enter"
         }`}
       >
         {/* Drag handle */}
         <div 
-          className="w-7 h-[3px] bg-[#D3D3CF] rounded-full mx-auto mt-2.5 mb-3 flex-shrink-0 cursor-pointer" 
+          className="w-7 h-[3px] bg-neutral-200 rounded-full mx-auto mt-2.5 mb-3 flex-shrink-0 cursor-pointer" 
           onClick={handleClose} 
         />
 
         {/* Header */}
-        <div className="px-4 pb-3 flex items-center justify-between border-b border-[#E9E9E7]">
-          <h3 className="text-[16px] font-semibold text-[#191919]">{title}</h3>
+        <div className="px-4 pb-3 flex items-center justify-between border-b border-neutral-200">
+          <h3 className="text-[16px] font-semibold text-neutral-900">{title}</h3>
           <button
             onClick={handleClose}
-            className="text-[#6B6B6B] hover:text-[#191919] text-[13px] font-medium min-h-[36px]"
+            className="text-neutral-600 hover:text-neutral-900 text-[13px] font-medium min-h-[36px]"
           >
             Cancel
           </button>

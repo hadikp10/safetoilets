@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useSupabase } from "@/hooks/useSupabase";
 import { useToiletDetail } from "@/lib/hooks/useToiletDetail";
 import { useToast } from "@/context/ToastContext";
 import imageCompression from "browser-image-compression";
 import { Restroom } from "@/types";
+import { Star, Camera, Lock } from "lucide-react";
 
 export default function VerifyDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -57,8 +59,8 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
 
   if (authLoading || toiletLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <svg className="animate-spin h-6 w-6 text-[#2F9E44]" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <svg className="animate-spin h-6 w-6 text-brand-green" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
         </svg>
@@ -72,18 +74,27 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
 
   if (toiletError || !toilet) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto animate-fadeIn">
-        <div className="w-10 h-10 border-[1.5px] border-[#D3D3CF] rounded-xl flex items-center justify-center text-xl text-[#999999] font-mono mb-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+        className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto"
+      >
+        <div className="w-10 h-10 border-[1.5px] border-neutral-200 rounded-xl flex items-center justify-center text-xl text-neutral-400 font-mono mb-4">
           ?
         </div>
-        <h2 className="text-base font-medium text-[#191919]">Toilet Not Found</h2>
-        <p className="text-sm text-[#6B6B6B] mt-1.5 leading-relaxed">We couldn&apos;t load the details for this toilet.</p>
+        <h2 className="text-base font-medium text-neutral-900">Toilet Not Found</h2>
+        <p className="text-sm text-neutral-600 mt-1.5 leading-relaxed">We couldn&apos;t load the details for this toilet.</p>
         <Link href="/" className="mt-4">
-          <button className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors">
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.08 }}
+            className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-[52px] px-6 rounded-[14px] transition-colors shadow-button"
+          >
             Return Home
-          </button>
+          </motion.button>
         </Link>
-      </div>
+      </motion.div>
     );
   }
 
@@ -217,24 +228,29 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
   ) => {
     return (
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+        <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
           {label}
         </span>
         <div className="flex items-center gap-2">
           <div className="flex items-center">
             {[1, 2, 3, 4, 5].map((num) => (
-              <button
+              <motion.button
                 key={num}
                 type="button"
                 onClick={() => setValue(num)}
-                className="w-11 h-11 flex items-center justify-center text-[28px] focus:outline-none transition-transform active:scale-90"
-                style={{ color: num <= value ? "#2F9E44" : "#E9E9E7" }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className="w-11 h-11 flex items-center justify-center focus:outline-none"
               >
-                ★
-              </button>
+                <Star
+                  className={`w-6 h-6 fill-current ${
+                    num <= value ? "text-brand-yellow" : "text-neutral-200"
+                  }`}
+                />
+              </motion.button>
             ))}
           </div>
-          <span className="font-mono text-base font-semibold text-[#191919] ml-2">
+          <span className="font-mono text-base font-normal text-neutral-900 ml-2">
             {value}.0
           </span>
         </div>
@@ -243,32 +259,39 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#191919] flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll animate-fadeIn text-left">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll text-left"
+    >
       
       {/* Header */}
       <div className="flex flex-col pt-6 px-4">
         <div className="flex justify-between items-center">
-          <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+          <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
             VERIFY & UPDATE
           </span>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.08 }}
             onClick={() => router.push(`/toilet/${id}`)}
             disabled={loading}
-            className="text-[13px] text-[#6B6B6B] hover:text-[#191919] font-medium min-h-[36px]"
+            className="text-[13px] text-neutral-600 hover:text-neutral-900 font-medium min-h-[36px]"
           >
             Cancel
-          </button>
+          </motion.button>
         </div>
-        <h1 className="text-[20px] font-semibold text-[#191919] tracking-tight leading-snug mt-1 truncate">
+        <h1 className="text-[20px] font-semibold text-neutral-900 tracking-tight leading-snug mt-1 truncate">
           {toilet.name}
         </h1>
       </div>
 
       {/* Thin document progress style (100% since verification is single-page) */}
-      <div className="w-full h-[2px] bg-[#2F9E44]"></div>
+      <div className="w-full h-[2px] bg-brand-green"></div>
 
       {errorMsg && (
-        <div className="mx-4 bg-[#FFF0F0] border border-[#E03131]/30 text-[#C21010] p-3 rounded-lg text-xs font-semibold animate-fadeIn">
+        <div className="mx-4 bg-brand-coralLight border border-brand-coral/20 text-brand-coralText p-3 rounded-[14px] text-xs font-normal">
           {errorMsg}
         </div>
       )}
@@ -286,45 +309,45 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
 
         {/* Present Facilities checklist */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+          <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
             Present Facilities
           </span>
-          <div className="flex flex-col border border-[#E9E9E7] rounded-lg overflow-hidden divide-y divide-[#E9E9E7]">
-            <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
+          <div className="flex flex-col border border-neutral-200 rounded-[14px] overflow-hidden divide-y divide-neutral-200">
+            <label className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer transition select-none min-h-[40px]">
               <input
                 type="checkbox"
                 checked={hasSoap}
                 onChange={(e) => setHasSoap(e.target.checked)}
-                className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
+                className="w-4 h-4 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
               />
-              <span className="text-[14px] font-normal text-[#191919]">Soap Available</span>
+              <span className="text-[14px] font-normal text-neutral-900">Soap Available</span>
             </label>
 
-            <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
+            <label className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer transition select-none min-h-[40px]">
               <input
                 type="checkbox"
                 checked={hasMirror}
                 onChange={(e) => setHasMirror(e.target.checked)}
-                className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
+                className="w-4 h-4 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
               />
-              <span className="text-[14px] font-normal text-[#191919]">Mirror Installed</span>
+              <span className="text-[14px] font-normal text-neutral-900">Mirror Installed</span>
             </label>
 
-            <label className="flex items-center gap-3 px-4 py-3 hover:bg-[#EFEEEB] cursor-pointer transition select-none min-h-[40px]">
+            <label className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer transition select-none min-h-[40px]">
               <input
                 type="checkbox"
                 checked={hasSanitary}
                 onChange={(e) => setHasSanitary(e.target.checked)}
-                className="w-4 h-4 rounded border-[#D3D3CF] text-[#2F9E44] focus:ring-[#2F9E44]/20"
+                className="w-4 h-4 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
               />
-              <span className="text-[14px] font-normal text-[#191919]">Sanitary Pad Disposal Box</span>
+              <span className="text-[14px] font-normal text-neutral-900">Sanitary Pad Disposal Box</span>
             </label>
           </div>
         </div>
 
         {/* Optional Photo Upload */}
         <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-medium tracking-widest uppercase text-[#999999]">
+          <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
             Latest Photo (Optional)
           </span>
           
@@ -339,10 +362,12 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
           />
 
           {photoPreview ? (
-            <div className="relative w-full h-36 rounded-lg bg-[#F7F7F5] overflow-hidden border border-[#E9E9E7] flex items-center justify-center">
+            <div className="relative w-full h-36 rounded-[14px] bg-neutral-100 overflow-hidden border border-neutral-200 flex items-center justify-center">
               <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={() => {
                   setPhoto(null);
                   setPhotoPreview(null);
@@ -351,26 +376,28 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
                 className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black transition-colors"
               >
                 ✕
-              </button>
+              </motion.button>
             </div>
           ) : (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
               onClick={() => fileInputRef.current?.click()}
               disabled={loading}
-              className="w-full h-20 border-2 border-dashed border-[#E9E9E7] hover:border-[#2F9E44] rounded-lg flex flex-col items-center justify-center gap-1.5 text-[#6B6B6B] hover:bg-[#F7F7F5] transition-all min-h-[44px]"
+              className="w-full h-20 border-2 border-dashed border-neutral-200 hover:border-brand-green rounded-[14px] flex flex-col items-center justify-center gap-1.5 text-neutral-600 hover:bg-neutral-100 transition-all min-h-[44px]"
             >
-              <span className="text-2xl">📸</span>
-              <span className="text-xs font-semibold">Tap to Take / Select Photo</span>
-            </button>
+              <Camera className="w-6 h-6 text-neutral-400" />
+              <span className="text-xs font-medium">Tap to Take / Select Photo</span>
+            </motion.button>
           )}
         </div>
 
         {/* Thin progress bar */}
         {uploadProgress > 0 && (
-          <div className="w-full bg-[#E9E9E7] h-[2px] overflow-hidden">
+          <div className="w-full bg-neutral-200 h-[2px] overflow-hidden">
             <div
-              className="bg-[#2F9E44] h-full transition-all duration-300"
+              className="bg-brand-green h-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>
@@ -378,18 +405,22 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
 
         {/* Submit actions */}
         <div className="flex gap-3 pt-4 mb-8">
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.08 }}
             onClick={() => router.push(`/toilet/${id}`)}
             disabled={loading}
-            className="bg-transparent border border-[#E9E9E7] text-[#191919] text-[14px] font-medium h-[46px] w-full rounded-xl hover:bg-[#EFEEEB] transition-colors disabled:opacity-50"
+            className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors disabled:opacity-50"
           >
             Back
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="submit"
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.08 }}
             disabled={loading}
-            className="bg-[#191919] hover:bg-[#2F9E44] text-white text-[14px] font-medium h-[46px] w-full rounded-xl transition-colors shadow-button disabled:opacity-50"
+            className="bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button disabled:opacity-50"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -404,31 +435,34 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
             ) : (
               "Submit Verification"
             )}
-          </button>
+          </motion.button>
         </div>
 
       </form>
 
       {/* Privacy overlay */}
       {privacyStatus && (
-        <div className="fixed inset-0 z-[120] bg-white/95 flex flex-col items-center justify-center p-6 text-center animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-[120] bg-white/95 flex flex-col items-center justify-center p-6 text-center"
+        >
           <div className="relative w-16 h-16 flex items-center justify-center mb-4">
-            <div className="absolute inset-0 bg-[#2F9E44]/10 rounded-full animate-ping"></div>
-            <div className="w-12 h-12 bg-[#2F9E44] rounded-full flex items-center justify-center text-white shadow-lg">
-              🔒
+            <div className="w-12 h-12 bg-brand-green rounded-full flex items-center justify-center text-white shadow-button">
+              <Lock className="w-5 h-5 text-white" />
             </div>
           </div>
-          <h3 className="font-semibold text-[#191919] text-sm">
+          <h3 className="font-semibold text-neutral-900 text-sm">
             {privacyStatus === "compressing" && "Compressing Photo..."}
             {privacyStatus === "scrubbing" && "Scrubbing GPS metadata tags..."}
             {privacyStatus === "securing" && "Uploading to vault..."}
           </h3>
-          <p className="text-xs text-[#6B6B6B] mt-1.5 max-w-xs leading-relaxed">
+          <p className="text-xs text-neutral-600 mt-1.5 max-w-xs leading-relaxed">
             SafeToilets strips camera metadata tags to keep your upload private.
           </p>
-        </div>
+        </motion.div>
       )}
 
-    </div>
+    </motion.div>
   );
 }

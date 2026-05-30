@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { Star, Camera, Lock, X } from "lucide-react";
 import { Restroom } from "@/types";
-import Button from "@/components/ui/Button";
 
 interface VerifyToiletFormProps {
   toilet: Restroom;
@@ -121,25 +122,27 @@ export default function VerifyToiletForm({
     setValue: (val: number) => void
   ) => {
     return (
-      <div className="flex flex-col gap-1">
-        <div className="flex justify-between text-xs font-semibold text-text-secondary">
+      <div className="flex flex-col gap-1.5">
+        <div className="flex justify-between items-center text-[11px] font-normal tracking-wide uppercase text-neutral-400">
           <span>{label}</span>
-          <span className="text-brand-green font-bold">{value} ★</span>
+          <span className="text-brand-green font-mono flex items-center gap-0.5">{value} <Star className="w-3 h-3 fill-current text-brand-yellow" /></span>
         </div>
-        <div className="flex bg-surface-muted dark:bg-dark-muted p-1 rounded-xl w-full border border-surface-border dark:border-dark-border">
+        <div className="flex bg-neutral-100 p-1 rounded-[14px] w-full border border-neutral-200">
           {[1, 2, 3, 4, 5].map((num) => (
-            <button
+            <motion.button
               key={num}
               type="button"
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
               onClick={() => setValue(num)}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition active:scale-90 min-h-[36px] ${
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition min-h-[36px] ${
                 value === num
-                  ? "bg-surface-card text-text-primary shadow-sm dark:bg-dark-card dark:text-text-inverse"
-                  : "text-text-secondary hover:text-text-primary dark:hover:text-text-inverse"
+                  ? "bg-white text-neutral-900 shadow-sm border border-neutral-200"
+                  : "text-neutral-600 hover:text-neutral-900"
               }`}
             >
               {num}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -147,26 +150,26 @@ export default function VerifyToiletForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 animate-fade-in">
-      <div className="bg-surface-card dark:bg-dark-card w-full max-w-md rounded-t-[24px] sm:rounded-2xl overflow-hidden max-h-[90vh] shadow-2xl flex flex-col border border-surface-border dark:border-dark-border relative">
+    <div className="fixed inset-0 z-50 bg-neutral-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+      <div className="bg-white w-full max-w-md rounded-t-[24px] sm:rounded-[20px] overflow-hidden max-h-[90vh] shadow-card flex flex-col border border-neutral-200 relative">
         
         {/* Header */}
-        <div className="px-4 py-3.5 border-b border-surface-border dark:border-dark-border flex items-center justify-between">
-          <h2 className="text-base font-bold text-text-primary dark:text-text-inverse">Verify & Update Toilet</h2>
-          <button onClick={onClose} className="text-text-secondary hover:text-text-primary min-h-[44px] min-w-[44px] flex items-center justify-center font-bold">
-            ✕
+        <div className="px-4 py-3.5 border-b border-neutral-200 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-neutral-900">Verify & Update Toilet</h2>
+          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-900 min-h-[44px] min-w-[44px] flex items-center justify-center">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 flex-1 overflow-y-auto no-scrollbar space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 flex-1 overflow-y-auto no-scrollbar space-y-4 text-left">
           {errorMsg && (
-            <div className="bg-brand-redLight text-brand-red p-3 rounded-xl text-xs font-semibold">
+            <div className="bg-brand-coralLight border border-brand-coral/20 text-brand-coralText p-3 rounded-[14px] text-xs font-normal">
               {errorMsg}
             </div>
           )}
 
           {/* Ratings */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {renderRatingGroup("Cleanliness", cleanliness, setCleanliness)}
             {renderRatingGroup("Smell Level", smell, setSmell)}
             {renderRatingGroup("Lighting", lighting, setLighting)}
@@ -175,36 +178,36 @@ export default function VerifyToiletForm({
           </div>
 
           {/* Amenities */}
-          <div className="bg-surface-muted dark:bg-dark-muted rounded-xl p-3 border border-surface-border dark:border-dark-border space-y-2">
-            <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Facilities Present</span>
+          <div className="bg-white border border-neutral-200 rounded-[20px] p-3 shadow-card space-y-2">
+            <span className="text-[10px] font-normal text-neutral-400 uppercase tracking-wide">Facilities Present</span>
             
             <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-medium select-none min-h-[44px]">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-neutral-900 select-none min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hasSoap}
                   onChange={(e) => setHasSoap(e.target.checked)}
-                  className="w-5 h-5 rounded border-surface-border text-brand-green focus:ring-brand-green/20"
+                  className="w-5 h-5 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
                 />
                 Soap Available
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-medium select-none min-h-[44px]">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-neutral-900 select-none min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hasMirror}
                   onChange={(e) => setHasMirror(e.target.checked)}
-                  className="w-5 h-5 rounded border-surface-border text-brand-green focus:ring-brand-green/20"
+                  className="w-5 h-5 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
                 />
                 Mirror Installed
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer text-sm font-medium select-none min-h-[44px]">
+              <label className="flex items-center gap-3 cursor-pointer text-sm font-normal text-neutral-900 select-none min-h-[44px]">
                 <input
                   type="checkbox"
                   checked={hasSanitary}
                   onChange={(e) => setHasSanitary(e.target.checked)}
-                  className="w-5 h-5 rounded border-surface-border text-brand-green focus:ring-brand-green/20"
+                  className="w-5 h-5 rounded border-neutral-400 text-brand-green focus:ring-brand-green/20"
                 />
                 Sanitary Pad Disposal Box
               </label>
@@ -213,7 +216,7 @@ export default function VerifyToiletForm({
 
           {/* Photo */}
           <div className="space-y-2">
-            <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Upload Latest Photo (Optional)</span>
+            <span className="text-[10px] font-normal text-neutral-400 uppercase tracking-wide block">Upload Latest Photo (Optional)</span>
             <input
               type="file"
               accept="image/*"
@@ -224,70 +227,80 @@ export default function VerifyToiletForm({
             />
 
             {photoPreview ? (
-              <div className="relative w-full h-36 rounded-xl bg-surface-muted dark:bg-dark-muted overflow-hidden border border-surface-border dark:border-dark-border flex items-center justify-center">
+              <div className="relative w-full h-36 rounded-[14px] bg-neutral-100 overflow-hidden border border-neutral-200 flex items-center justify-center">
                 <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ duration: 0.08 }}
                   onClick={() => {
                     setPhoto(null);
                     setPhotoPreview(null);
                   }}
-                  className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-2 hover:bg-black active:scale-90 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black transition-colors"
                 >
-                  ✕
-                </button>
+                  <X className="w-4 h-4" />
+                </motion.button>
               </div>
             ) : (
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-20 border-2 border-dashed border-surface-border dark:border-dark-border hover:border-brand-green rounded-xl flex flex-col items-center justify-center gap-1 text-text-secondary active:scale-[0.98] transition min-h-[44px]"
+                className="w-full h-20 border-2 border-dashed border-neutral-200 hover:border-brand-green rounded-[14px] flex flex-col items-center justify-center gap-1.5 text-neutral-600 hover:bg-neutral-100 transition-all min-h-[44px]"
               >
-                <span className="text-xs font-semibold">Tap to Take / Select Photo</span>
-              </button>
+                <Camera className="w-5 h-5 text-neutral-400" />
+                <span className="text-xs font-medium">Tap to Take / Select Photo</span>
+              </motion.button>
             )}
           </div>
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
-            <Button
+            <motion.button
               type="button"
-              variant="secondary"
-              fullWidth
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
               onClick={onClose}
               disabled={loading}
+              className="flex-1 h-[52px] bg-white border border-neutral-200 text-neutral-900 hover:bg-neutral-50 text-[14px] font-medium rounded-[14px] flex items-center justify-center disabled:opacity-50"
             >
               Cancel
-            </Button>
-            <Button
+            </motion.button>
+            <motion.button
               type="submit"
-              variant="primary"
-              fullWidth
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.08 }}
               disabled={loading}
+              className="flex-1 h-[52px] bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium rounded-[14px] shadow-button flex items-center justify-center disabled:opacity-50"
             >
               Submit Update
-            </Button>
+            </motion.button>
           </div>
         </form>
 
         {/* Privacy processing Overlay */}
         {privacyStatus && (
-          <div className="absolute inset-0 z-[60] bg-surface-card/95 dark:bg-dark-card/95 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 z-[60] bg-white/95 flex flex-col items-center justify-center p-6 text-center"
+          >
             <div className="relative w-16 h-16 flex items-center justify-center mb-4">
-              <div className="absolute inset-0 bg-brand-sky/15 rounded-full animate-ping"></div>
-              <div className="w-12 h-12 bg-brand-sky rounded-full flex items-center justify-center text-white shadow-lg">
-                🔒
+              <div className="w-12 h-12 bg-brand-green rounded-full flex items-center justify-center text-white shadow-button">
+                <Lock className="w-5 h-5 text-white" />
               </div>
             </div>
-            <h3 className="font-bold text-text-primary dark:text-text-inverse text-sm">
+            <h3 className="font-semibold text-neutral-900 text-sm">
               {privacyStatus === "compressing" && "Compressing Photo..."}
               {privacyStatus === "scrubbing" && "Scrubbing GPS metadata tags..."}
               {privacyStatus === "securing" && "Uploading to vault..."}
             </h3>
-            <p className="text-xs text-text-secondary mt-1 max-w-xs">
+            <p className="text-xs text-neutral-600 mt-1.5 max-w-xs">
               SafeToilets strips camera metadata tags to keep your upload private.
             </p>
-          </div>
+          </motion.div>
         )}
 
       </div>

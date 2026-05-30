@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 
 interface FilterPillsProps {
   activeFilters: string[];
@@ -35,21 +36,23 @@ export default function FilterPills({ activeFilters, onChange }: FilterPillsProp
   };
 
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide py-2 px-4 flex gap-1 whitespace-nowrap bg-white border-b border-[#E9E9E7]">
+    <div className="w-full overflow-x-auto scrollbar-hide py-2 px-4 flex gap-1 whitespace-nowrap bg-white border-b border-neutral-200">
       {PILLS.map((pill) => {
         const isActive = activeFilters.includes(pill.key);
         return (
-          <button
+          <motion.button
             key={pill.key}
             onClick={() => handlePillClick(pill.key)}
-            className={`text-[11px] font-medium tracking-wide px-2.5 py-1 rounded-md transition-colors duration-150 border ${
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.08 }}
+            className={`h-[30px] px-3 rounded-full text-[11px] font-medium tracking-wide uppercase border-none outline-none select-none flex items-center justify-center ${
               isActive
-                ? "bg-[#EBFBEE] border-[#2F9E44] text-[#1E6E2E]"
-                : "bg-[#F7F7F5] border-[#E9E9E7] text-[#6B6B6B]"
+                ? "bg-brand-greenLight text-brand-greenText"
+                : "bg-neutral-100 text-neutral-600"
             }`}
           >
             {pill.label}
-          </button>
+          </motion.button>
         );
       })}
     </div>
