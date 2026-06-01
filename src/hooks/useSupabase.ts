@@ -118,6 +118,8 @@ export function useSupabase() {
       isMounted = false;
       subscription.unsubscribe();
       window.removeEventListener("pageshow", handlePageShow);
+      // Reset ref so Strict Mode re-mount can re-fetch the profile
+      profileFetchInProgressRef.current = null;
     };
   }, []);
 

@@ -45,11 +45,13 @@ export default function AdminPage() {
           sessionStorage.setItem("authRedirectPath", "/admin");
         }
         router.replace("/login");
-      } else if (!isAdmin) {
+      } else if (profile && !isAdmin) {
+        // Only redirect once profile has loaded — avoids false redirect
+        // when profile is still in-flight (e.g. React Strict Mode race)
         router.replace("/");
       }
     }
-  }, [loading, isAuthenticated, isAdmin, router]);
+  }, [loading, isAuthenticated, isAdmin, profile, router]);
 
   const fetchAdminData = async () => {
     setDataLoading(true);
@@ -271,7 +273,8 @@ export default function AdminPage() {
     );
   }
 
-  if (loading) {
+  if (loading || (isAuthenticated && !profile)) {
+    // Show spinner while auth is loading OR while profile is being fetched
     return (
       <div className="min-h-screen bg-surface-bg flex items-center justify-center">
         <svg className="animate-spin h-5 w-5 text-brand-green" viewBox="0 0 24 24">
