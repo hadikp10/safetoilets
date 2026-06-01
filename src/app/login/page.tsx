@@ -104,7 +104,7 @@ export default function LoginPage() {
         
         {/* Subtext */}
         <p className="text-[14px] text-neutral-600 mt-1 mb-10 text-left">
-          Find clean toilets near you in Kerala.
+          Find clean toilets near you.
         </p>
 
         {/* Google Button */}

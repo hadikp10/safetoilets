@@ -685,7 +685,7 @@ export default function AddToiletPage() {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Search place in Kerala..."
+                    placeholder="Search place..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => {

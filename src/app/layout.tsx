@@ -17,8 +17,8 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SafeToilets | Kerala",
-  description: "Find clean public toilets near you in Kerala",
+  title: "SafeToilets",
+  description: "Find clean public toilets near you",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

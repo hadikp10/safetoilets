@@ -130,7 +130,7 @@ export default function HomePage() {
           className="bg-white w-full max-w-md rounded-2xl p-6 border border-neutral-200 shadow-2xl flex flex-col gap-4 text-left"
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-[16px] font-semibold text-neutral-900 font-sans">Search a Place in Kerala</h3>
+            <h3 className="text-[16px] font-semibold text-neutral-900 font-sans">Search a Place</h3>
             <button
               onClick={() => {
                 setSearchModalOpen(false);
@@ -337,9 +337,6 @@ export default function HomePage() {
         <header className="h-[52px] bg-surface-card dark:bg-dark-card border-b border-surface-border dark:border-dark-border px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-brand-green font-bold text-xl tracking-tight">SafeToilets</span>
-            <span className="text-xs font-semibold text-text-secondary bg-brand-greenLight text-brand-green dark:bg-brand-green/20 px-1.5 py-0.5 rounded-md uppercase">
-              Kerala
-            </span>
           </div>
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
@@ -405,7 +402,7 @@ export default function HomePage() {
                 }}
                 className="text-xs text-text-secondary hover:text-text-primary underline mt-2 transition"
               >
-                Or browse all restrooms in Kerala
+                Or browse all restrooms
               </button>
             </div>
           </motion.div>
@@ -655,9 +652,6 @@ export default function HomePage() {
         <div className="flex items-center">
           <Link href="/" className="text-sm font-bold text-text-primary dark:text-text-inverse tracking-tight flex items-center gap-1.5">
             <span className="text-brand-green">SafeToilets</span>
-            <span className="text-[9px] font-semibold text-text-secondary bg-brand-greenLight text-brand-green dark:bg-brand-green/20 px-1.5 py-0.5 rounded-md uppercase">
-              Kerala
-            </span>
           </Link>
         </div>
 
@@ -774,7 +768,7 @@ export default function HomePage() {
               transition={{ duration: 0.08 }}
               className="bg-white hover:bg-neutral-100 text-brand-yellowText border border-neutral-200 text-xs font-medium rounded-lg px-4 py-2 transition-colors"
             >
-              Browse All Toilets in Kerala
+              Browse All Toilets
             </motion.button>
           </div>
         </div>
