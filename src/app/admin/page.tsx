@@ -10,6 +10,16 @@ import { ArrowLeft, Star, AlertTriangle } from "lucide-react";
 export default function AdminPage() {
   const { profile, loading, isAuthenticated, isAdmin } = useSupabase();
   const router = useRouter();
+  const [authTimeout, setAuthTimeout] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        setAuthTimeout(true);
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const [activeTab, setActiveTab] = useState<"reports" | "toilets" | "users">("reports");
   const [reports, setReports] = useState<Report[]>([]);
@@ -230,6 +240,36 @@ export default function AdminPage() {
       }
     });
   };
+
+  if (authTimeout) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto font-sans">
+        <div className="w-12 h-12 text-brand-yellow bg-brand-yellowLight rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-brand-yellow" />
+        </div>
+        <h3 className="text-base font-semibold text-neutral-900">Authentication Timeout</h3>
+        <p className="text-xs text-neutral-600 mt-2 leading-relaxed">
+          Retrieving your login status is taking longer than usual. Please check your connection or try signing in again.
+        </p>
+        <div className="flex flex-col gap-2 w-full mt-6">
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={() => window.location.reload()}
+            className="w-full h-[40px] bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium rounded-xl transition-colors shadow-button"
+          >
+            Retry Loading
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={() => router.push("/")}
+            className="w-full h-[40px] bg-transparent border border-neutral-200 hover:bg-neutral-50 text-neutral-600 text-[13px] font-medium rounded-xl transition-colors"
+          >
+            Browse Without Account
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

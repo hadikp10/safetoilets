@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { Restroom } from "@/types";
 import ToiletCard from "@/components/toilet/ToiletCard";
 import { calculateDistance } from "@/lib/utils/distance";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, AlertTriangle } from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -19,6 +19,16 @@ export default function ProfilePage() {
 
   const [contributions, setContributions] = useState<Restroom[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authTimeout, setAuthTimeout] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (authLoading || loading) {
+        setAuthTimeout(true);
+      }
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [authLoading, loading]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -48,6 +58,37 @@ export default function ProfilePage() {
       getPosition();
     }
   }, [user, getPosition]);
+
+  if (authTimeout) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto font-sans">
+        <div className="w-12 h-12 text-brand-yellow bg-brand-yellowLight rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-brand-yellow" />
+        </div>
+        <h3 className="text-base font-semibold text-neutral-900">Authentication Timeout</h3>
+        <p className="text-xs text-neutral-600 mt-2 leading-relaxed">
+          Retrieving your profile data is taking longer than usual. Please check your connection or try signing in again.
+        </p>
+        <div className="flex flex-col gap-2 w-full mt-6">
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={() => window.location.reload()}
+            className="w-full h-[40px] bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium rounded-xl transition-colors shadow-button"
+          >
+            Retry Loading
+          </motion.button>
+          <Link href="/" className="w-full">
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              className="w-full h-[40px] bg-transparent border border-neutral-200 hover:bg-neutral-50 text-neutral-600 text-[13px] font-medium rounded-xl transition-colors"
+            >
+              Browse Without Account
+            </motion.button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (authLoading || loading) {
     return (
