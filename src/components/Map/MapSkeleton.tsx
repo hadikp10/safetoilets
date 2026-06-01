@@ -2,7 +2,7 @@ import React from "react";
 
 export default function MapSkeleton() {
   return (
-    <div className="w-full h-[55vh] min-h-[300px] rounded-b-2xl bg-neutral-100 animate-pulse relative flex flex-col items-center justify-center border-b border-neutral-200">
+    <div className="w-full h-[35vh] sm:h-[55vh] min-h-[300px] rounded-b-2xl bg-neutral-100 animate-pulse relative flex flex-col items-center justify-center border-b border-neutral-200">
       {/* Visual coordinates grid mock lines */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(161,161,170,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(161,161,170,0.05)_1px,transparent_1px)] bg-[size:20px_20px]" />
       

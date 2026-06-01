@@ -600,7 +600,7 @@ export default function AddToiletPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll text-left"
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col gap-3 sm:gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll text-left"
     >
       
       {/* Step Header */}
@@ -648,7 +648,7 @@ export default function AddToiletPage() {
       )}
 
       {/* Inner Step Layout - wrapped with horizontal margins */}
-      <div className="px-4 flex-1 flex flex-col gap-4">
+      <div className="px-4 flex-1 flex flex-col gap-2 sm:gap-4">
         
         {/* STEP 1: Select Location */}
         {step === 1 && (
@@ -686,7 +686,7 @@ export default function AddToiletPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col gap-4">
+            <div className="flex-1 flex flex-col gap-2 sm:gap-4 pb-20 sm:pb-0">
               <div className="flex flex-col gap-1.5">
                 <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400 block">
                   Search Location
@@ -736,7 +736,7 @@ export default function AddToiletPage() {
                 Drag the pin to place it exactly where the restroom is located.
               </p>
 
-              <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-neutral-200 relative bg-neutral-100 flex items-center justify-center shadow-card">
+              <div className="w-full h-[28vh] sm:h-[52vh] rounded-[20px] overflow-hidden border border-neutral-200 relative bg-neutral-100 flex items-center justify-center shadow-card">
               {gpsLoading && !latitude ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-8 h-8 rounded-full border-4 border-brand-green border-t-transparent animate-spin"></div>
@@ -795,14 +795,16 @@ export default function AddToiletPage() {
               </div>
             )}
 
-            <motion.button
-              onClick={handleNext}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08 }}
-              className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-all shadow-button mt-4 ${nextBtnShake ? "animate-shake" : ""}`}
-            >
-              Confirm Location
-            </motion.button>
+            <div className="fixed bottom-0 left-0 right-0 bg-neutral-50 px-4 py-3 z-10 border-t border-neutral-200/60 max-w-md mx-auto sm:relative sm:border-none sm:p-0 sm:mt-auto sm:z-0">
+              <motion.button
+                onClick={handleNext}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-all shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Confirm Location
+              </motion.button>
+            </div>
           </div>
           )
         )}

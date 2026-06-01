@@ -111,6 +111,17 @@ create index idx_reports_status on public.reports (status);
 -- 3. FUNCTIONS & TRIGGERS DEFINITIONS
 -- =========================================================================
 
+-- Function to check if a user is an admin (bypasses RLS recursion)
+create or replace function public.is_admin()
+returns boolean as $$
+begin
+  return exists (
+    select 1 from public.profiles
+    where id = auth.uid() and is_admin = true
+  );
+end;
+$$ language plpgsql security definer;
+
 -- Trigger to auto-create profile on auth sign up
 create or replace function public.handle_new_user()
 returns trigger as $$
@@ -292,7 +303,7 @@ create policy "Allow users to update own profile" on public.profiles
 
 create policy "Admins can do everything on profiles" on public.profiles
   for all using (
-    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+    public.is_admin()
   );
 
 -- Restrooms Policies
