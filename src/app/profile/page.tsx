@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -20,6 +20,24 @@ export default function ProfilePage() {
   const [contributions, setContributions] = useState<Restroom[]>([]);
   const [loading, setLoading] = useState(true);
   const [authTimeout, setAuthTimeout] = useState(false);
+
+  const userCoords = useMemo(() => {
+    return latitude && longitude ? { latitude, longitude } : null;
+  }, [latitude, longitude]);
+
+  const contributionsWithDistance = useMemo(() => {
+    return contributions.map((restroom) => {
+      const distance = userCoords
+        ? calculateDistance(
+            userCoords.latitude,
+            userCoords.longitude,
+            restroom.latitude,
+            restroom.longitude
+          )
+        : null;
+      return { restroom, distance };
+    });
+  }, [contributions, userCoords]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -101,8 +119,6 @@ export default function ProfilePage() {
     );
   }
 
-  const userCoords = latitude && longitude ? { latitude, longitude } : null;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -166,23 +182,13 @@ export default function ProfilePage() {
             animate="show"
             className="bg-white rounded-[20px] overflow-hidden border border-neutral-200 flex flex-col divide-y divide-neutral-200 shadow-card"
           >
-            {contributions.map((restroom) => {
-              const distance = userCoords
-                ? calculateDistance(
-                    userCoords.latitude,
-                    userCoords.longitude,
-                    restroom.latitude,
-                    restroom.longitude
-                  )
-                : null;
-              return (
-                <ToiletCard
-                  key={restroom.id}
-                  toilet={restroom}
-                  distance={distance}
-                />
-              );
-            })}
+            {contributionsWithDistance.map(({ restroom, distance }) => (
+              <ToiletCard
+                key={restroom.id}
+                toilet={restroom}
+                distance={distance}
+              />
+            ))}
           </motion.div>
         )}
       </div>

@@ -283,8 +283,8 @@ alter table public.reports enable row level security;
 alter table public.admin_actions enable row level security;
 
 -- Profiles Policies
-create policy "Allow public read for profiles" on public.profiles
-  for select using (true);
+create policy "Allow users to read their own profile" on public.profiles
+  for select using (auth.uid() = id);
 
 create policy "Allow users to update own profile" on public.profiles
   for update using (auth.uid() = id);
@@ -310,6 +310,7 @@ create policy "Allow authenticated users to create restrooms" on public.restroom
   for insert with check (
     auth.uid() is not null 
     and (exists (select 1 from public.profiles where id = auth.uid() and is_banned = false))
+    and (created_by = auth.uid())
   );
 
 create policy "Allow admins to update/delete restrooms" on public.restrooms
@@ -325,6 +326,7 @@ create policy "Allow authenticated users to create verifications" on public.rest
   for insert with check (
     auth.uid() is not null 
     and (exists (select 1 from public.profiles where id = auth.uid() and is_banned = false))
+    and (user_id = auth.uid())
   );
 
 create policy "Allow admins to do everything on verifications" on public.restroom_verifications
@@ -334,7 +336,10 @@ create policy "Allow admins to do everything on verifications" on public.restroo
 
 -- Reports Policies
 create policy "Allow anyone to submit reports" on public.reports
-  for insert with check (true);
+  for insert with check (
+    (user_id is null) 
+    or (auth.uid() = user_id)
+  );
 
 create policy "Admins can view and manage reports" on public.reports
   for all using (
