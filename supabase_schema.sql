@@ -49,6 +49,7 @@ create table public.restrooms (
   public_image_url text,
   backup_image_url text,
   
+  open_24_hours text default 'Not Sure' check (open_24_hours in ('Yes', 'No', 'Not Sure')) not null,
   is_hidden boolean default false not null,
   created_by uuid references public.profiles(id) on delete set null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,

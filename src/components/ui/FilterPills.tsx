@@ -8,10 +8,9 @@ interface FilterPillsProps {
 
 const PILLS = [
   { key: "all", label: "All" },
-  { key: "clean", label: "Clean ✓" },
-  { key: "womenSafe", label: "Women Safe" },
-  { key: "accessible", label: "Accessible ♿" },
-  { key: "twentyFourHours", label: "24 Hours" },
+  { key: "twentyFourHours", label: "24 Hrs" },
+  { key: "womenAccessible", label: "Women Accessible" },
+  { key: "accessible", label: "Wheelchair" },
 ];
 
 export default function FilterPills({ activeFilters, onChange }: FilterPillsProps) {
