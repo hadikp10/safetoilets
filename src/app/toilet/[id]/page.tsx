@@ -1,14 +1,20 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
 import ToiletDetailClient from "./ToiletDetailClient";
+import { cache } from "react";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+const getToilet = cache(async (id: string) => {
   const supabase = createServerSupabaseClient();
-  const { data: toilet } = await supabase
+  const { data } = await supabase
     .from("restrooms")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
+  return data;
+});
+
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const toilet = await getToilet(params.id);
 
   if (!toilet) {
     return {
@@ -43,12 +49,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 export default async function ToiletPage({ params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
-  const { data: toilet } = await supabase
-    .from("restrooms")
-    .select("*")
-    .eq("id", params.id)
-    .single();
+  const toilet = await getToilet(params.id);
 
   if (!toilet) {
     notFound();

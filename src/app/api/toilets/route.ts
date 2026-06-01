@@ -105,6 +105,43 @@ export async function POST(req: Request) {
       photoBase64,
     } = body;
 
+    // Validate inputs
+    if (!name || typeof name !== "string" || name.trim().length === 0 || name.trim().length > 100) {
+      return NextResponse.json({ error: "Invalid toilet name. It must be between 1 and 100 characters." }, { status: 400 });
+    }
+    if (!location_name || typeof location_name !== "string" || location_name.trim().length === 0 || location_name.trim().length > 250) {
+      return NextResponse.json({ error: "Invalid location name. It must be between 1 and 250 characters." }, { status: 400 });
+    }
+    if (typeof latitude !== "number" || latitude < -90 || latitude > 90) {
+      return NextResponse.json({ error: "Invalid latitude. It must be a number between -90 and 90." }, { status: 400 });
+    }
+    if (typeof longitude !== "number" || longitude < -180 || longitude > 180) {
+      return NextResponse.json({ error: "Invalid longitude. It must be a number between -180 and 180." }, { status: 400 });
+    }
+
+    const validTypes = ['Restaurant', 'Petrol Pump', 'Mall', 'Railway / Bus Station', 'Public Toilet', 'Other'];
+    if (!validTypes.includes(type)) {
+      return NextResponse.json({ error: "Invalid restroom type category." }, { status: 400 });
+    }
+
+    const validToiletTypes = ['Indian', 'European', 'Both'];
+    if (!validToiletTypes.includes(toilet_type)) {
+      return NextResponse.json({ error: "Invalid toilet standard type." }, { status: 400 });
+    }
+
+    const validGenderAccess = ['Men', 'Women', 'Unisex', 'Both'];
+    if (!validGenderAccess.includes(gender_access)) {
+      return NextResponse.json({ error: "Invalid gender access type." }, { status: 400 });
+    }
+
+    const ratings = [cleanliness, smell, lighting, women_safety, water_availability];
+    for (const rating of ratings) {
+      if (typeof rating !== "number" || rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+        return NextResponse.json({ error: "All rating values must be integers between 1 and 5." }, { status: 400 });
+      }
+    }
+
+
     // 1. Insert Restroom Row
     const { data: newRestroom, error: restroomError } = await supabase
       .from("restrooms")

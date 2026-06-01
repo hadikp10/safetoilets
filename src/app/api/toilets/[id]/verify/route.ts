@@ -36,6 +36,14 @@ export async function POST(
       photoBase64,
     } = body;
 
+    // Validate ratings bounds
+    const ratings = [cleanliness, smell, lighting, women_safety, water_availability];
+    for (const rating of ratings) {
+      if (typeof rating !== "number" || rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+        return NextResponse.json({ error: "All rating values must be integers between 1 and 5." }, { status: 400 });
+      }
+    }
+
     let publicImageUrl: string | null = null;
 
     if (photoBase64) {
