@@ -8,7 +8,7 @@ import { Restroom, Report, Profile } from "@/types";
 import { ArrowLeft, Star, AlertTriangle } from "lucide-react";
 
 export default function AdminPage() {
-  const { profile, loading, isAuthenticated, isAdmin } = useSupabase();
+  const { user, profile, loading, isAuthenticated, isAdmin } = useSupabase();
   const router = useRouter();
   const [authTimeout, setAuthTimeout] = useState(false);
 
@@ -39,19 +39,93 @@ export default function AdminPage() {
 
   // Guard routing check
   useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated) {
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("authRedirectPath", "/admin");
+    const checkAuthAndRedirect = async () => {
+      const statePayload = {
+        source: "admin_page_guard",
+        loading,
+        isAuthenticated,
+        isAdmin,
+        authEmail: user?.email || null,
+        authUid: user?.id || null,
+        profileId: profile?.id || null,
+        profileIsAdmin: profile?.is_admin ?? null,
+        profile: profile ? { id: profile.id, email: profile.email, is_admin: profile.is_admin } : null
+      };
+
+      console.log("[TIMELINE] T4: admin guard executes", statePayload);
+      console.log("[Diag Admin Page] State check:", statePayload);
+
+      if (!loading) {
+        if (!isAuthenticated) {
+          console.log("[TIMELINE] T5: redirect occurs", {
+            destination: "/login",
+            line: 47,
+            condition: "!isAuthenticated"
+          });
+          console.log("[Diag Admin Page] Redirecting to /login because isAuthenticated is false (Line 47)");
+          try {
+            await fetch("/api/diag", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event: "redirect_to_login",
+                line: 47,
+                condition: "!isAuthenticated",
+                state: statePayload
+              })
+            });
+          } catch (e) {
+            console.error("Failed to post diagnostics:", e);
+          }
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("authRedirectPath", "/admin");
+          }
+          router.replace("/login");
+        } else if (!isAdmin) {
+          console.log("[TIMELINE] T5: redirect occurs", {
+            destination: "/",
+            line: 51,
+            condition: "isAuthenticated && !isAdmin"
+          });
+          console.log("[Diag Admin Page] Redirecting to / because isAdmin is false (Line 51)", {
+            profileIsAdmin: profile?.is_admin,
+            isAdmin
+          });
+          try {
+            await fetch("/api/diag", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event: "redirect_to_home",
+                line: 51,
+                condition: "isAuthenticated && !isAdmin",
+                state: statePayload
+              })
+            });
+          } catch (e) {
+            console.error("Failed to post diagnostics:", e);
+          }
+          router.replace("/");
+        } else {
+          console.log("[Diag Admin Page] No redirect: user is authenticated, profile exists, and isAdmin is true");
+          try {
+            await fetch("/api/diag", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event: "no_redirect_success",
+                state: statePayload
+              })
+            });
+          } catch (e) {}
         }
-        router.replace("/login");
-      } else if (profile && !isAdmin) {
-        // Only redirect once profile has loaded — avoids false redirect
-        // when profile is still in-flight (e.g. React Strict Mode race)
-        router.replace("/");
+      } else {
+        console.log("[Diag Admin Page] No redirect: still loading");
       }
-    }
-  }, [loading, isAuthenticated, isAdmin, profile, router]);
+    };
+
+    checkAuthAndRedirect();
+  }, [loading, isAuthenticated, isAdmin, profile, user, router]);
 
   const fetchAdminData = async () => {
     setDataLoading(true);

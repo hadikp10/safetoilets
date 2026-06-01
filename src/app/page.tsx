@@ -60,6 +60,26 @@ export default function HomePage() {
     }
   }, []);
 
+  // Temporary diagnostic log for landing on the home page
+  useEffect(() => {
+    try {
+      fetch("/api/diag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "home_page_load",
+          state: {
+            source: "home_page",
+            authLoading,
+            isAuthenticated,
+            profileExists: !!profile,
+            profile: profile ? { id: profile.id, email: profile.email, is_admin: profile.is_admin } : null
+          }
+        })
+      });
+    } catch (e) {}
+  }, [authLoading, isAuthenticated, profile]);
+
   // Track location loading time in seconds
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;

@@ -23,11 +23,38 @@ export default function LoginPage() {
   }, [loading]);
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      const savedPath = sessionStorage.getItem("authRedirectPath") || "/";
-      sessionStorage.removeItem("authRedirectPath");
-      router.replace(savedPath);
-    }
+    const checkLoginRedirect = async () => {
+      const statePayload = {
+        source: "login_page",
+        loading,
+        isAuthenticated,
+        savedPath: typeof window !== "undefined" ? sessionStorage.getItem("authRedirectPath") : null
+      };
+
+      console.log("[Diag Login Page] State check:", statePayload);
+
+      if (!loading && isAuthenticated) {
+        const savedPath = sessionStorage.getItem("authRedirectPath") || "/";
+        console.log("[Diag Login Page] Redirecting to:", savedPath);
+        try {
+          await fetch("/api/diag", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "login_redirect",
+              destination: savedPath,
+              state: statePayload
+            })
+          });
+        } catch (e) {
+          console.error("Failed to post diagnostics from login:", e);
+        }
+        sessionStorage.removeItem("authRedirectPath");
+        router.replace(savedPath);
+      }
+    };
+
+    checkLoginRedirect();
   }, [isAuthenticated, loading, router]);
 
   const handleGoogleLogin = async () => {

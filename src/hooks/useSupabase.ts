@@ -38,15 +38,40 @@ export function useSupabase() {
 
   // Sync profile details from DB
   const fetchProfile = async (userId: string) => {
+    console.log("[TIMELINE] T1: profile query starts", {
+      userId,
+      profileFetchInProgressRef: profileFetchInProgressRef.current
+    });
     if (profileFetchInProgressRef.current === userId) {
-      console.log("[Auth] Profile query already in progress/completed for userId:", userId);
+      console.log("[Diag Auth] Profile query already in progress/completed for userId:", userId);
+      try {
+        fetch("/api/diag", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "fetch_profile_deduplicated",
+            userId,
+            profileFetchInProgressRef: profileFetchInProgressRef.current
+          })
+        });
+      } catch (e) {}
       return;
     }
     profileFetchInProgressRef.current = userId;
 
     try {
-      console.log("[Auth] Profile query start for userId:", userId);
-      const { data, error } = await withTimeout(
+      try {
+        fetch("/api/diag", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "fetch_profile_start",
+            userId
+          })
+        });
+      } catch (e) {}
+
+      const response = await withTimeout(
         Promise.resolve(
           supabase
             .from("profiles")
@@ -58,11 +83,56 @@ export function useSupabase() {
         "Profile fetch timed out"
       );
 
-      if (error) throw error;
+      console.log("[TIMELINE] T2: profile query result", {
+        data: response.data,
+        error: response.error ? {
+          message: response.error.message,
+          code: response.error.code,
+          details: response.error.details
+        } : null,
+        status: response.status
+      });
+
+      console.log("[Diag Auth] Raw response from Supabase profiles query:", {
+        data: response.data,
+        error: response.error,
+        status: response.status,
+        statusText: response.statusText
+      });
+
+      try {
+        fetch("/api/diag", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "fetch_profile_response",
+            userId,
+            rawResponse: {
+              data: response.data,
+              error: response.error ? {
+                message: response.error.message,
+                details: response.error.details,
+                hint: response.error.hint,
+                code: response.error.code
+              } : null,
+              status: response.status,
+              statusText: response.statusText
+            }
+          })
+        });
+      } catch (e) {}
+
+      if (response.error) throw response.error;
       
-      const profileData = data as Profile;
+      const profileData = response.data as Profile;
       setProfile(profileData);
-      console.log("[Auth] Profile query success:", profileData);
+      console.log("[Diag Auth] Profile query success. Populated fields:", {
+        id: profileData.id,
+        email: profileData.email,
+        is_admin: profileData.is_admin,
+        full_name: profileData.full_name,
+        is_banned: profileData.is_banned
+      });
 
       // Log avatar fetching indicators
       if (profileData.avatar_url) {
@@ -74,8 +144,25 @@ export function useSupabase() {
         console.log("[Auth] Avatar fetch skipped: no avatar URL in profile schema");
       }
     } catch (err) {
-      console.error("[Auth] Profile query failure:", err);
-      console.log("[Auth] Avatar fetch failure due to profile query failure");
+      console.log("[TIMELINE] T2: profile query result (failed/exception)", {
+        error: err instanceof Error ? err.message : err
+      });
+      console.error("[Diag Auth] Profile query failure:", err);
+      try {
+        fetch("/api/diag", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event: "fetch_profile_failure",
+            userId,
+            error: err instanceof Error ? {
+              message: err.message,
+              stack: err.stack
+            } : err
+          })
+        });
+      } catch (e) {}
+      console.log("[Diag Auth] Avatar fetch failure due to profile query failure");
       setProfile(null);
       // Reset ref to allow retry on failure
       profileFetchInProgressRef.current = null;
@@ -95,6 +182,13 @@ export function useSupabase() {
         
         const currentUser = session?.user ?? null;
         setUser(currentUser);
+        
+        console.log("[TIMELINE] T0: session restored", {
+          event,
+          authEmail: currentUser?.email || null,
+          authUid: currentUser?.id || null,
+          sessionUserId: session?.user?.id || null
+        });
         
         if (currentUser) {
           await fetchProfile(currentUser.id);
@@ -158,6 +252,15 @@ export function useSupabase() {
     }
   };
 
+  const isAdmin = profile?.is_admin ?? false;
+  console.log("[TIMELINE] T3: isAdmin calculated", {
+    profileId: profile?.id || null,
+    profileEmail: profile?.email || null,
+    profileIsAdmin: profile?.is_admin ?? null,
+    isAdmin,
+    loading
+  });
+
   return {
     user,
     profile,
@@ -165,7 +268,7 @@ export function useSupabase() {
     loginWithGoogle,
     logout,
     isAuthenticated: !!user,
-    isAdmin: profile?.is_admin ?? false,
+    isAdmin,
     isBanned: profile?.is_banned ?? false,
   };
 }
