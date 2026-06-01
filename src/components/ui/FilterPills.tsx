@@ -36,7 +36,7 @@ export default function FilterPills({ activeFilters, onChange }: FilterPillsProp
   };
 
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide py-2 px-4 flex gap-1 whitespace-nowrap bg-white border-b border-neutral-200">
+    <div className="w-full overflow-x-auto no-scrollbar py-2.5 px-4 flex gap-1.5 whitespace-nowrap bg-surface-bg dark:bg-dark-bg border-b border-surface-border dark:border-dark-border">
       {PILLS.map((pill) => {
         const isActive = activeFilters.includes(pill.key);
         return (
@@ -44,11 +44,11 @@ export default function FilterPills({ activeFilters, onChange }: FilterPillsProp
             key={pill.key}
             onClick={() => handlePillClick(pill.key)}
             whileTap={{ scale: 0.96 }}
-            transition={{ duration: 0.08 }}
-            className={`h-[30px] px-3 rounded-full text-[11px] font-medium tracking-wide uppercase border-none outline-none select-none flex items-center justify-center ${
+            transition={{ duration: 0.15 }}
+            className={`h-9 px-4 rounded-full text-xs font-semibold border-none outline-none select-none flex items-center justify-center transition-colors duration-150 ${
               isActive
-                ? "bg-brand-greenLight text-brand-greenText"
-                : "bg-neutral-100 text-neutral-600"
+                ? "bg-brand-green text-text-inverse shadow-sm"
+                : "bg-surface-muted text-text-secondary dark:bg-dark-muted dark:text-text-secondary hover:bg-surface-border dark:hover:bg-dark-border"
             }`}
           >
             {pill.label}

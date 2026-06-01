@@ -12,8 +12,9 @@ import FilterPills from "@/components/ui/FilterPills";
 import ToiletCard from "@/components/toilet/ToiletCard";
 import SkeletonCard from "@/components/ui/SkeletonCard";
 import MapSkeleton from "@/components/Map/MapSkeleton";
+import Button from "@/components/ui/Button";
 import { Restroom } from "@/types";
-import { MapPin, Smartphone, Inbox, Compass, Search, AlertCircle, Lock, RefreshCw } from "lucide-react";
+import { MapPin, Smartphone, Inbox, Compass, Search, AlertCircle, Lock, RefreshCw, Sparkles, ShieldCheck, Accessibility, Clock, Image as ImageIcon } from "lucide-react";
 
 // Dynamic map view to prevent Leaflet SSR errors
 const MapView = dynamic(() => import("@/components/Map/MapView"), {
@@ -47,6 +48,17 @@ export default function HomePage() {
   const [searchResults, setSearchResults] = useState<{ label: string; lat: number; lng: number }[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasAcceptedLanding, setHasAcceptedLanding] = useState(false);
+
+  // If coordinates are in URL query, bypass landing page
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("lat") && searchParams.get("lng")) {
+        setHasAcceptedLanding(true);
+      }
+    }
+  }, []);
 
   // Track location loading time in seconds
   useEffect(() => {
@@ -250,6 +262,8 @@ export default function HomePage() {
 
   // Auto trigger location check on startup if permission previously granted
   useEffect(() => {
+    if (!hasAcceptedLanding) return;
+
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get("lat") && searchParams.get("lng")) {
@@ -279,7 +293,7 @@ export default function HomePage() {
         }
       }
     }
-  }, [getPosition]);
+  }, [getPosition, hasAcceptedLanding]);
 
   // Fetch toilets within current map bounds using SWR
   const { toilets, isLoading: toiletsLoading, error: toiletsError, mutate } = useNearbyToilets(mapBounds, activeFilters);
@@ -315,6 +329,173 @@ export default function HomePage() {
   const isPermissionDenied = geoError && geoError.toLowerCase().includes("denied");
   const hasError = geoError && !isPermissionDenied;
   const isFinalFailure = secondsLoading >= 20 || hasError;
+
+  if (!hasAcceptedLanding) {
+    return (
+      <div className="min-h-screen bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse flex flex-col relative overflow-x-hidden">
+        {/* Header Bar */}
+        <header className="h-[52px] bg-surface-card dark:bg-dark-card border-b border-surface-border dark:border-dark-border px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-brand-green font-bold text-xl tracking-tight">SafeToilets</span>
+            <span className="text-xs font-semibold text-text-secondary bg-brand-greenLight text-brand-green dark:bg-brand-green/20 px-1.5 py-0.5 rounded-md uppercase">
+              Kerala
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-text-secondary">Hi, {profile?.full_name || "User"}</span>
+                <Button variant="ghost" className="h-8 px-2 text-xs" onClick={logout}>
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost" className="h-8 px-2 text-xs">
+                  Sign In
+                </Button>
+              </Link>
+            )}
+          </div>
+        </header>
+
+        {/* Hero Section */}
+        <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto w-full text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="flex flex-col items-center w-full"
+          >
+            {/* Tag Badge */}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-greenLight text-brand-greenDark dark:bg-brand-green/10 dark:text-brand-green mb-6 border border-brand-green/10">
+              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+              100% Verified Community Restrooms
+            </span>
+
+            {/* Headline */}
+            <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-text-primary dark:text-text-inverse sm:text-4xl">
+              Find Public Toilets Near You
+            </h1>
+
+            {/* Supporting Text */}
+            <p className="text-sm text-text-secondary mt-3 max-w-sm leading-relaxed">
+              Find toilets with details that matter before you go.
+            </p>
+
+            {/* CTA Button */}
+            <div className="w-full mt-8 px-4 flex flex-col gap-2">
+              <Button
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("geolocation_allowed", "true");
+                  }
+                  getPosition();
+                  setHasAcceptedLanding(true);
+                }}
+                className="w-full h-12 bg-brand-green hover:bg-brand-greenDark text-text-inverse font-bold text-sm shadow-md rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 group border-none"
+              >
+                <MapPin className="w-4 h-4 group-hover:animate-bounce" />
+                Find Toilets Near Me
+              </Button>
+              <button
+                onClick={() => {
+                  setBrowseWithoutCoords(true);
+                  setHasAcceptedLanding(true);
+                }}
+                className="text-xs text-text-secondary hover:text-text-primary underline mt-2 transition"
+              >
+                Or browse all restrooms in Kerala
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Trust Indicators Grid */}
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.08, ease: "easeOut" }}
+            className="w-full mt-10"
+          >
+            <h2 className="text-xs font-bold text-text-secondary uppercase tracking-wider text-left mb-4 px-2">
+              Why SafeToilets?
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+                <ShieldCheck className="w-5 h-5 text-brand-green" />
+                <div>
+                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Community-Contributed</h3>
+                  <p className="text-[10px] text-text-secondary mt-0.5">Verified updates from visitors.</p>
+                </div>
+              </div>
+              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+                <Accessibility className="w-5 h-5 text-brand-green" />
+                <div>
+                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Gender & Access</h3>
+                  <p className="text-[10px] text-text-secondary mt-0.5">Accessibility & safety indicators.</p>
+                </div>
+              </div>
+              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+                <Sparkles className="w-5 h-5 text-brand-green" />
+                <div>
+                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Amenities Listed</h3>
+                  <p className="text-[10px] text-text-secondary mt-0.5">Soap, mirrors, bins documented.</p>
+                </div>
+              </div>
+              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+                <Compass className="w-5 h-5 text-brand-green" />
+                <div>
+                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Location Search</h3>
+                  <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Real-time distance metrics.</p>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Features Detail Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.16, ease: "easeOut" }}
+            className="w-full mt-10 border-t border-surface-border dark:border-dark-border pt-8 pb-4"
+          >
+            <h2 className="text-xs font-bold text-text-secondary uppercase tracking-wider text-left mb-4 px-2">
+              Features
+            </h2>
+            <div className="space-y-3.5 text-left px-2">
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 rounded-lg bg-brand-greenLight dark:bg-brand-green/10 text-brand-green">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Cleanliness Ratings</h4>
+                  <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Five-star scores on hygiene, smell, lighting, safety, and water.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 rounded-lg bg-brand-greenLight dark:bg-brand-green/10 text-brand-green">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Visitor Photos</h4>
+                  <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Real user uploads to preview cleanliness before arriving.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 rounded-lg bg-brand-greenLight dark:bg-brand-green/10 text-brand-green">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Opening Hours</h4>
+                  <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Checks on night safety and 24-hour service flags.</p>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        </main>
+      </div>
+    );
+  }
 
   if (latitude === null && !browseWithoutCoords && (geoLoading || geoError)) {
     return (
@@ -467,51 +648,49 @@ export default function HomePage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col relative overflow-x-hidden"
+      className="min-h-screen bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse flex flex-col relative overflow-x-hidden"
     >
       
-      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-white/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-neutral-200/80">
+      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-surface-card/90 dark:bg-dark-card/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-surface-border dark:border-dark-border">
         <div className="flex items-center">
-          <Link href="/" className="text-[15px] font-medium text-neutral-900 tracking-tight">
-            SafeToilets
+          <Link href="/" className="text-sm font-bold text-text-primary dark:text-text-inverse tracking-tight flex items-center gap-1.5">
+            <span className="text-brand-green">SafeToilets</span>
+            <span className="text-[9px] font-semibold text-text-secondary bg-brand-greenLight text-brand-green dark:bg-brand-green/20 px-1.5 py-0.5 rounded-md uppercase">
+              Kerala
+            </span>
           </Link>
         </div>
 
         <div className="flex items-center gap-3 min-h-[32px]">
           {authLoading ? (
-            <div className="w-7 h-7 rounded-full bg-neutral-100 animate-pulse" />
+            <div className="w-7 h-7 rounded-full bg-surface-muted dark:bg-dark-muted animate-pulse" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-2.5">
               <Link
                 href="/profile"
-                className="w-7 h-7 rounded-full bg-brand-greenLight text-brand-greenText text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-brand-greenLight/80"
+                className="w-7 h-7 rounded-full bg-brand-greenLight text-brand-greenDark dark:bg-brand-green/20 dark:text-brand-green text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-brand-greenLight/80"
               >
                 {getInitials(profile?.full_name)}
               </Link>
               <button
                 onClick={logout}
-                className="text-[13px] text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
+                className="text-[13px] text-text-secondary hover:text-text-primary dark:hover:text-text-inverse font-medium transition-colors"
               >
                 Logout
               </button>
             </div>
           ) : (
-            <Link
-              href="/login"
-              className="text-[13px] text-neutral-600 hover:text-neutral-900 font-medium transition-colors"
-            >
-              Sign in
+            <Link href="/login">
+              <Button variant="ghost" className="h-8 px-2.5 text-xs font-semibold">
+                Sign In
+              </Button>
             </Link>
           )}
 
           <Link href="/add">
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08 }}
-              className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-[32px] px-3 rounded-lg shadow-button transition-colors"
-            >
-              + Add
-            </motion.button>
+            <Button size="sm" className="bg-brand-green hover:bg-brand-greenDark text-text-inverse rounded-full font-semibold px-4">
+              Add Toilet
+            </Button>
           </Link>
         </div>
       </header>
@@ -700,7 +879,7 @@ export default function HomePage() {
 
           {/* Toilet list items container */}
           <div 
-            className="overflow-y-auto pb-8 no-scrollbar bg-white"
+            className="overflow-y-auto pb-8 no-scrollbar bg-surface-bg dark:bg-dark-bg py-4"
             style={{ height: "calc(100dvh - 52px - 52vh - 44px)" }}
           >
             {toiletsError ? (
@@ -765,19 +944,33 @@ export default function HomePage() {
               )
             ) : (
               <motion.div
-                variants={{
-                  show: { transition: { staggerChildren: 0.055 } }
-                }}
                 initial="hidden"
                 animate="show"
-                className="bg-white rounded-[20px] overflow-hidden border border-neutral-200 mx-4 flex flex-col divide-y divide-neutral-200 shadow-card"
+                variants={{
+                  hidden: { opacity: 0 },
+                  show: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.04
+                    }
+                  }
+                }}
+                className="space-y-3.5 px-4"
               >
                 {sortedToilets.map((toilet) => (
-                  <ToiletCard
+                  <motion.div
                     key={toilet.id}
-                    toilet={toilet}
-                    distance={refCoords ? calculateDistance(refCoords.latitude, refCoords.longitude, toilet.latitude, toilet.longitude) : null}
-                  />
+                    variants={{
+                      hidden: { opacity: 0, y: 8 },
+                      show: { opacity: 1, y: 0 }
+                    }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <ToiletCard
+                      toilet={toilet}
+                      distance={refCoords ? calculateDistance(refCoords.latitude, refCoords.longitude, toilet.latitude, toilet.longitude) : null}
+                    />
+                  </motion.div>
                 ))}
               </motion.div>
             )}
@@ -788,17 +981,19 @@ export default function HomePage() {
 
       {/* Geolocation Permission Onboarding Modal */}
       {showLocationPrompt && (
-        <div className="fixed inset-0 z-[120] bg-black/5 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-xl p-6 border border-neutral-200 shadow-lg flex flex-col gap-4 text-left">
-            <h3 className="text-[18px] font-semibold text-neutral-900">Location Access</h3>
-            <p className="text-[14px] text-neutral-600 leading-relaxed">
-              SafeToilets needs your location to find nearby toilets. Allow browser permission to continue.
+        <div className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-card dark:bg-dark-card w-full max-w-sm rounded-2xl p-6 border border-surface-border dark:border-dark-border shadow-2xl flex flex-col gap-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center text-xl mx-auto">
+              📍
+            </div>
+            <h3 className="font-bold text-text-primary dark:text-text-inverse text-lg">Location Access</h3>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              SafeToilets needs your location to find nearby toilets.
             </p>
             <div className="flex flex-col gap-2 mt-2">
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                transition={{ duration: 0.08 }}
-                className="w-full h-[40px] bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium rounded-lg transition-colors"
+              <Button
+                variant="primary"
+                fullWidth
                 onClick={() => {
                   if (typeof window !== "undefined") {
                     localStorage.setItem("geolocation_allowed", "true");
@@ -808,17 +1003,16 @@ export default function HomePage() {
                 }}
               >
                 Allow Location Access
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.96 }}
-                transition={{ duration: 0.08 }}
-                className="w-full h-[40px] bg-transparent border border-neutral-200 hover:bg-neutral-100 text-neutral-600 text-[14px] font-medium rounded-lg transition-colors"
+              </Button>
+              <Button
+                variant="ghost"
+                fullWidth
                 onClick={() => {
                   setShowLocationPrompt(false);
                 }}
               >
                 Browse Without Location
-              </motion.button>
+              </Button>
             </div>
           </div>
         </div>

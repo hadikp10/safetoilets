@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -8,12 +9,9 @@ interface BottomSheetProps {
 }
 
 export default function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
-  const [isExiting, setIsExiting] = useState(false);
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      setIsExiting(false);
     } else {
       document.body.style.overflow = "";
     }
@@ -22,53 +20,49 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      onClose();
-    }, 200); // matches the transition timing
-  };
-
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className={`fixed inset-0 bg-black/5 z-[100] transition-opacity duration-200 ${
-          isExiting ? "opacity-0" : "backdrop-enter opacity-100"
-        }`}
-        onClick={handleClose}
-      />
-
-      {/* Peek Bottom Sheet */}
-      <div
-        className={`fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[20px] shadow-lg max-h-[80vh] overflow-y-auto no-scrollbar pb-[max(16px,env(safe-area-inset-bottom))] flex flex-col border-t border-neutral-200 max-w-md mx-auto ${
-          isExiting ? "sheet-exit" : "sheet-enter"
-        }`}
-      >
-        {/* Drag handle */}
-        <div 
-          className="w-7 h-[3px] bg-neutral-200 rounded-full mx-auto mt-2.5 mb-3 flex-shrink-0 cursor-pointer" 
-          onClick={handleClose} 
-        />
-
-        {/* Header */}
-        <div className="px-4 pb-3 flex items-center justify-between border-b border-neutral-200">
-          <h3 className="text-[16px] font-semibold text-neutral-900">{title}</h3>
-          <button
-            onClick={handleClose}
-            className="text-neutral-600 hover:text-neutral-900 text-[13px] font-medium min-h-[36px]"
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+          {/* Backdrop Click Dismiss */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 cursor-pointer bg-black/40 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          
+          {/* Drawer Container */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 350 }}
+            className="w-full max-w-md bg-surface-card dark:bg-dark-card rounded-t-[28px] border-t border-surface-border dark:border-dark-border shadow-2xl relative z-10 pb-[env(safe-area-inset-bottom)]"
           >
-            Cancel
-          </button>
-        </div>
+            {/* iOS-Style Drag Handle */}
+            <div className="w-9 h-1.5 bg-surface-border dark:bg-dark-border rounded-full mx-auto my-3" />
+            
+            {/* Header */}
+            <div className="px-4 pb-3 flex items-center justify-between border-b border-surface-border dark:border-dark-border">
+              <h3 className="text-base font-semibold text-text-primary dark:text-text-inverse">{title}</h3>
+              <button
+                onClick={onClose}
+                className="text-text-secondary hover:text-text-primary dark:hover:text-text-inverse min-h-[44px] min-w-[44px] flex items-center justify-center text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </div>
 
-        {/* Content Area */}
-        <div className="p-4 overflow-y-auto no-scrollbar">
-          {children}
+            {/* Content Area */}
+            <div className="p-4 overflow-y-auto max-h-[60vh] no-scrollbar">
+              {children}
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </>
+      )}
+    </AnimatePresence>
   );
 }

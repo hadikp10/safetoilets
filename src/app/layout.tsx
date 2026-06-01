@@ -1,11 +1,23 @@
 import "@/styles/globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata, Viewport } from "next";
+import { DM_Sans, DM_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
-import { ToastProvider } from "@/context/ToastContext";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-dm-sans",
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
+});
 
 export const metadata: Metadata = {
-  title: "SafeToilets",
+  title: "SafeToilets | Kerala",
   description: "Find clean public toilets near you in Kerala",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -13,25 +25,17 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "SafeToilets",
   },
-  openGraph: {
-    title: "SafeToilets",
-    description: "Find clean public toilets near you in Kerala",
-    url: "https://safetoilets.in",
-    siteName: "SafeToilets",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "SafeToilets",
-    description: "Find clean public toilets near you in Kerala",
-  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1.0,
-  themeColor: "#16C47F",
+  themeColor: "#16A34A",
 };
+
+import { ToastProvider } from "@/context/ToastContext";
+import { cn } from "@/lib/utils";
+
 
 export default function RootLayout({
   children,
@@ -39,12 +43,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-IN" className="h-full">
+    <html lang="en-IN" className={cn("h-full", "font-sans", dmSans.variable, dmMono.variable)}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-        <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="h-full bg-neutral-50 text-neutral-900 font-sans">
+      <body className="h-full bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse">
         <ToastProvider>
           {children}
           <Analytics />
