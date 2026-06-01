@@ -86,34 +86,6 @@ export function useSupabase() {
     console.log("[Auth] Session restoration start");
     let isMounted = true;
 
-    // 1. Get initial session with a 5-second timeout guard
-    withTimeout(
-      supabase.auth.getSession(),
-      5000,
-      "Session restoration timed out"
-    )
-      .then(async ({ data: { session } }) => {
-        if (!isMounted) return;
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          console.log("[Auth] Session restoration success: active session resolved");
-          await fetchProfile(session.user.id);
-        } else {
-          console.log("[Auth] Session restoration success: no session found");
-          setProfile(null);
-        }
-      })
-      .catch((err) => {
-        if (!isMounted) return;
-        console.error("[Auth] Session restoration failure:", err);
-        setUser(null);
-        setProfile(null);
-      })
-      .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
 
     // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
