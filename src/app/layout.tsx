@@ -47,7 +47,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="h-full bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse">
+      <body className="h-full bg-surface-bg text-text-primary">
         <ToastProvider>
           {children}
           <Analytics />

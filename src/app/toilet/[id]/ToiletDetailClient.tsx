@@ -142,28 +142,28 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
       return {
         bg: "bg-brand-greenLight",
         dot: "bg-brand-green",
-        text: "text-brand-greenText",
+        text: "text-brand-greenDark",
         label: "Verified just now",
       };
     } else if (diffHours < 12) {
       return {
-        bg: "bg-brand-yellowLight",
-        dot: "bg-brand-yellow",
-        text: "text-brand-yellowText",
+        bg: "bg-brand-greenVeryLight",
+        dot: "bg-brand-green",
+        text: "text-brand-greenDark",
         label: `Verified ${Math.floor(diffHours)}h ago`,
       };
     } else if (diffHours < 48) {
       return {
-        bg: "bg-neutral-100",
-        dot: "bg-neutral-400",
-        text: "text-neutral-600",
+        bg: "bg-surface-muted",
+        dot: "bg-text-secondary",
+        text: "text-text-secondary",
         label: "Verified yesterday",
       };
     } else {
       return {
-        bg: "bg-brand-coralLight",
-        dot: "bg-brand-coral",
-        text: "text-brand-coralText",
+        bg: "bg-surface-muted",
+        dot: "bg-text-secondary",
+        text: "text-text-primary",
         label: "Needs verification",
       };
     }
@@ -177,7 +177,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
           <Star
             key={star}
             className={`w-3.5 h-3.5 fill-current ${
-              star <= rounded ? "text-brand-yellow" : "text-neutral-200"
+              star <= rounded ? "text-brand-green" : "text-neutral-200"
             }`}
           />
         ))}
@@ -187,8 +187,8 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 text-neutral-900 w-full max-w-md mx-auto flex flex-col text-left">
-        <div className="w-full h-[220px] skeleton rounded-none" />
+      <div className="min-h-screen bg-surface-bg text-text-primary w-full max-w-md mx-auto flex flex-col text-left">
+        <div className="w-full h-[220px] bg-surface-muted skeleton rounded-none" />
         <div className="px-4 pt-5 pb-8 space-y-4">
           <div className="h-6 w-3/4 skeleton" />
           <div className="h-4 w-1/2 skeleton" />
@@ -206,7 +206,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-        className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto"
+        className="min-h-screen bg-surface-bg flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto"
       >
         <div className="w-10 h-10 border-[1.5px] border-neutral-200 rounded-xl flex items-center justify-center text-xl text-neutral-400 font-mono mb-4">
           ?
@@ -235,7 +235,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-screen bg-neutral-50 text-neutral-900 w-full max-w-md mx-auto flex flex-col text-left relative pb-[env(safe-area-inset-bottom)]"
+      className="min-h-screen bg-surface-bg text-text-primary w-full max-w-md mx-auto flex flex-col text-left relative pb-[env(safe-area-inset-bottom)]"
     >
       
       {/* Back navigation */}
@@ -279,12 +279,12 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative bg-brand-greenLight border border-brand-green/20 rounded-[20px] p-4 mb-4 flex flex-col gap-3 text-brand-greenText overflow-hidden"
+            className="relative bg-white border border-brand-green/30 rounded-[20px] p-4 mb-4 flex flex-col gap-3 text-text-primary overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-2 duration-200"
           >
             {/* Dismiss button */}
             <button 
               onClick={handleDismissBanner}
-              className="absolute top-3 right-3 text-brand-greenText/50 hover:text-brand-greenText transition-colors"
+              className="absolute top-3 right-3 text-text-disabled hover:text-text-secondary transition-colors"
               aria-label="Dismiss"
             >
               <X className="w-4 h-4" />
@@ -294,10 +294,10 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
               <div className="w-6 h-6 rounded-full bg-brand-green/10 flex items-center justify-center flex-shrink-0">
                 <Check className="w-3.5 h-3.5 text-brand-green" strokeWidth={3} />
               </div>
-              <h3 className="text-sm font-semibold leading-none">Thanks for contributing!</h3>
+              <h3 className="text-sm font-semibold leading-none text-text-primary">Thanks for contributing!</h3>
             </div>
             
-            <p className="text-xs leading-relaxed text-brand-greenText/90 -mt-1">
+            <p className="text-xs leading-relaxed text-text-secondary -mt-1">
               Your submission helps people find clean toilets more easily.
             </p>
 
@@ -317,7 +317,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
                   <motion.button
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.08 }}
-                    className="w-full h-[40px] bg-white border border-brand-green/20 hover:bg-brand-greenLight/50 text-brand-greenText text-xs font-medium rounded-xl flex items-center justify-center transition-colors"
+                    className="w-full h-[40px] bg-white border border-neutral-200 hover:bg-neutral-50 text-text-secondary text-xs font-medium rounded-xl flex items-center justify-center transition-colors"
                   >
                     Add Another Toilet
                   </motion.button>
@@ -327,7 +327,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
                   <motion.button
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.08 }}
-                    className="w-full h-[40px] bg-transparent border border-transparent hover:bg-brand-greenLight/30 text-brand-greenText/80 hover:text-brand-greenText text-xs font-medium rounded-xl flex items-center justify-center transition-colors"
+                    className="w-full h-[40px] bg-transparent border border-transparent hover:bg-neutral-50 text-text-secondary hover:text-text-primary text-xs font-medium rounded-xl flex items-center justify-center transition-colors"
                   >
                     Go Home
                   </motion.button>
@@ -465,7 +465,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
             whileTap={{ scale: 0.96 }}
             transition={{ duration: 0.08 }}
             onClick={() => setShowReportSheet(true)}
-            className="text-center text-[13px] text-neutral-400 hover:text-brand-coral mt-2 transition-colors focus:outline-none py-2"
+            className="text-center text-[13px] text-neutral-400 hover:text-text-primary mt-2 transition-colors focus:outline-none py-2"
           >
             Report an issue
           </motion.button>

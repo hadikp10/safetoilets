@@ -16,71 +16,31 @@
     --font-mono: var(--font-dm-mono);
   }
   :root {
-    --background: oklch(0.985 0.003 85);
-    --foreground: oklch(0.145 0.008 260);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0.008 260);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0.008 260);
-    --primary: oklch(0.723 0.198 141.6);
-    --primary-foreground: oklch(1 0 0);
-    --secondary: oklch(0.966 0.038 141.6);
-    --secondary-foreground: oklch(0.518 0.15 142.5);
-    --muted: oklch(0.96 0.01 251);
-    --muted-foreground: oklch(0.51 0.01 251);
-    --accent: oklch(0.963 0.035 83.2);
-    --accent-foreground: oklch(0.812 0.181 83.2);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.92 0.01 251);
-    --input: oklch(0.92 0.01 251);
-    --ring: oklch(0.723 0.198 141.6);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --background: #FAFAF7;
+    --foreground: #111827;
+    --card: #FFFFFF;
+    --card-foreground: #111827;
+    --popover: #FFFFFF;
+    --popover-foreground: #111827;
+    --primary: #22C55E;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F5F5F0;
+    --secondary-foreground: #111827;
+    --muted: #F5F5F0;
+    --muted-foreground: #6B7280;
+    --accent: #F0FDF4;
+    --accent-foreground: #15803D;
+    --destructive: #6B7280;
+    --destructive-foreground: #FFFFFF;
+    --border: #E5E7EB;
+    --input: #E5E7EB;
+    --ring: #22C55E;
+    --chart-1: #22C55E;
+    --chart-2: #15803D;
+    --chart-3: #DCFCE7;
+    --chart-4: #F0FDF4;
+    --chart-5: #6B7280;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.723 0.198 141.6);
-    --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.96 0.01 251);
-    --sidebar-accent-foreground: oklch(0.145 0 0);
-    --sidebar-border: oklch(0.92 0.01 251);
-    --sidebar-ring: oklch(0.723 0.198 141.6);
-  }
-  .dark {
-    --background: oklch(0.145 0.008 260);
-    --foreground: oklch(0.985 0.003 85);
-    --card: oklch(0.25 0.01 251);
-    --card-foreground: oklch(0.985 0.003 85);
-    --popover: oklch(0.25 0.01 251);
-    --popover-foreground: oklch(0.985 0.003 85);
-    --primary: oklch(0.723 0.198 141.6);
-    --primary-foreground: oklch(0.145 0.008 260);
-    --secondary: oklch(0.35 0.01 251);
-    --secondary-foreground: oklch(0.985 0.003 85);
-    --muted: oklch(0.35 0.01 251);
-    --muted-foreground: oklch(0.7 0.01 251);
-    --accent: oklch(0.35 0.01 251);
-    --accent-foreground: oklch(0.985 0.003 85);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.723 0.198 141.6);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.25 0.01 251);
-    --sidebar-foreground: oklch(0.985 0.003 85);
-    --sidebar-primary: oklch(0.723 0.198 141.6);
-    --sidebar-primary-foreground: oklch(1 0 0);
-    --sidebar-accent: oklch(0.35 0.01 251);
-    --sidebar-accent-foreground: oklch(0.985 0.003 85);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.723 0.198 141.6);
   }
   * {
     @apply border-border;
@@ -101,31 +61,24 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 37%, #F5F5F4 63%);
+  background: linear-gradient(90deg, #F5F5F0 25%, #E5E7EB 37%, #F5F5F0 63%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  .skeleton-shimmer {
-    background: linear-gradient(90deg, #292524 25%, #3D3835 37%, #292524 63%);
-    background-size: 200% 100%;
-  }
-}
-
-/* 2. Pulsing Blue User Location Dot */
-@keyframes pulse-blue {
+/* 2. Pulsing Green User Location Dot */
+@keyframes pulse-green {
   0% {
     transform: scale(0.9);
-    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.6);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
   }
   70% {
     transform: scale(1.1);
-    box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
   }
   100% {
     transform: scale(0.9);
-    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
   }
 }
 
@@ -133,9 +86,9 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #0EA5E9;
+  background: #22C55E;
   border: 2px solid white;
-  animation: pulse-blue 2.2s ease-in-out infinite;
+  animation: pulse-green 2.2s ease-in-out infinite;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -158,13 +111,7 @@
 /* Custom leaflet map fixes */
 .leaflet-container {
   font-family: var(--font-dm-sans), sans-serif;
-  background-color: #F5F5F4 !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .leaflet-container {
-    background-color: #292524 !important;
-  }
+  background-color: #F5F5F0 !important;
 }
 
 /* Ensure leaflet controls use our colors and curves */
@@ -177,30 +124,24 @@
 
 .leaflet-bar a {
   background-color: #FFFFFF !important;
-  color: #1C1917 !important;
-  border-bottom: 1px solid #E7E5E4 !important;
+  color: #111827 !important;
+  border-bottom: 1px solid #E5E7EB !important;
 }
 
 .leaflet-bar a:hover {
-  background-color: #F5F5F4 !important;
+  background-color: #F5F5F0 !important;
 }
 
 /* Drag handle indicator */
 .drawer-handle {
   width: 36px;
   height: 5px;
-  background-color: rgba(60, 60, 67, 0.3);
+  background-color: rgba(17, 24, 39, 0.3);
   border-radius: 2.5px;
   margin: 10px auto;
 }
 
-@media (prefers-color-scheme: dark) {
-  .drawer-handle {
-    background-color: rgba(255, 255, 255, 0.24);
-  }
-}
-
-/* User pulsing dot animation (Section 2e) */
+/* User pulsing dot animation */
 @keyframes location-pulse {
   0% { transform: scale(1); opacity: 1; }
   70% { transform: scale(2.5); opacity: 0; }
@@ -211,7 +152,7 @@
   animation: location-pulse 2s ease-out infinite;
 }
 
-/* Toast animation (Section 6d) */
+/* Toast animation */
 @keyframes toast-slide-down {
   0% { transform: translate(-50%, -1rem); opacity: 0; }
   15% { transform: translate(-50%, 0); opacity: 1; }
@@ -223,25 +164,14 @@
   animation: toast-slide-down 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* iOS Safari Input Zoom Fix (Section 6b) */
+/* iOS Safari Input Zoom Fix */
 input, textarea, select {
   font-size: 16px !important;
 }
 
-/* 100dvh viewport definition (Section 6b) */
+/* 100dvh viewport definition */
 .h-dvh {
   height: 100dvh;
-}
-
-@media (prefers-color-scheme: dark) {
-  .leaflet-bar a {
-    background-color: #292524 !important;
-    color: #FAFAF9 !important;
-    border-bottom: 1px solid #3D3835 !important;
-  }
-  .leaflet-bar a:hover {
-    background-color: #44403C !important;
-  }
 }
 
 /* Shake animation for validation failures */

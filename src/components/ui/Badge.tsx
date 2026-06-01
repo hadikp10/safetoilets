@@ -10,19 +10,19 @@ export default function Badge({ children, variant = "muted" }: BadgeProps) {
 
   switch (variant) {
     case "green":
-      style += " bg-brand-greenLight text-brand-green dark:bg-brand-greenLight/15";
+      style += " bg-brand-greenLight text-brand-greenDark";
       break;
     case "yellow":
-      style += " bg-brand-yellowLight text-brand-yellow dark:bg-brand-yellowLight/15";
+      style += " bg-brand-greenVeryLight text-brand-greenDark border border-brand-green/10";
       break;
     case "red":
-      style += " bg-brand-redLight text-brand-red dark:bg-brand-redLight/15";
+      style += " bg-surface-muted text-text-primary border border-surface-border";
       break;
     case "sky":
-      style += " bg-blue-50 text-brand-sky dark:bg-brand-sky/15";
+      style += " bg-brand-greenVeryLight text-brand-green";
       break;
     case "muted":
-      style += " bg-surface-muted text-text-secondary dark:bg-dark-muted dark:text-text-secondary";
+      style += " bg-surface-muted text-text-secondary";
       break;
   }
 

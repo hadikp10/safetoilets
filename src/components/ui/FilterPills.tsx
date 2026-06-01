@@ -36,7 +36,7 @@ export default function FilterPills({ activeFilters, onChange }: FilterPillsProp
   };
 
   return (
-    <div className="w-full overflow-x-auto no-scrollbar py-2.5 px-4 flex gap-1.5 whitespace-nowrap bg-surface-bg dark:bg-dark-bg border-b border-surface-border dark:border-dark-border">
+    <div className="w-full overflow-x-auto no-scrollbar py-2.5 px-4 flex gap-1.5 whitespace-nowrap bg-surface-bg border-b border-surface-border">
       {PILLS.map((pill) => {
         const isActive = activeFilters.includes(pill.key);
         return (
@@ -48,7 +48,7 @@ export default function FilterPills({ activeFilters, onChange }: FilterPillsProp
             className={`h-9 px-4 rounded-full text-xs font-semibold border-none outline-none select-none flex items-center justify-center transition-colors duration-150 ${
               isActive
                 ? "bg-brand-green text-text-inverse shadow-sm"
-                : "bg-surface-muted text-text-secondary dark:bg-dark-muted dark:text-text-secondary hover:bg-surface-border dark:hover:bg-dark-border"
+                : "bg-surface-muted text-text-secondary hover:bg-surface-border"
             }`}
           >
             {pill.label}

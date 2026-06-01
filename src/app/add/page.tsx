@@ -216,9 +216,9 @@ export default function AddToiletPage() {
 
   if (authTimeout) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto font-sans">
-        <div className="w-12 h-12 text-brand-yellow bg-brand-yellowLight rounded-full flex items-center justify-center mb-4">
-          <AlertTriangle className="w-6 h-6 text-brand-yellow" />
+      <div className="min-h-screen bg-surface-bg flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto font-sans">
+        <div className="w-12 h-12 text-text-secondary bg-surface-muted rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-text-secondary" />
         </div>
         <h3 className="text-base font-semibold text-neutral-900">Authentication Timeout</h3>
         <p className="text-xs text-neutral-600 mt-2 leading-relaxed">
@@ -554,7 +554,7 @@ export default function AddToiletPage() {
               >
                 <Star
                   className={`w-6 h-6 fill-current ${
-                    num <= value ? "text-brand-yellow" : "text-neutral-200"
+                    num <= value ? "text-brand-green" : "text-neutral-200"
                   }`}
                 />
               </motion.button>
@@ -633,7 +633,7 @@ export default function AddToiletPage() {
       </div>
 
       {errorMsg && (
-        <div className="mx-4 bg-brand-coralLight border border-brand-coral/20 text-brand-coralText p-3 rounded-[14px] text-xs font-normal">
+        <div className="mx-4 bg-brand-greenVeryLight border border-brand-green/20 text-text-secondary p-3 rounded-[14px] text-xs font-normal">
           {errorMsg}
         </div>
       )}
@@ -645,7 +645,7 @@ export default function AddToiletPage() {
         {step === 1 && (
           showGpsIntro ? (
             <div className="bg-white border border-neutral-200 p-5 rounded-[20px] flex flex-col gap-4 shadow-card mt-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-brand-greenLight text-brand-greenText flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-brand-greenLight text-brand-greenDark flex items-center justify-center mx-auto">
                 <MapPin className="w-5 h-5 text-brand-green" />
               </div>
               <h3 className="text-base font-medium text-neutral-900">Allow Location Access</h3>
@@ -694,7 +694,7 @@ export default function AddToiletPage() {
                         handleSearchPlaces();
                       }
                     }}
-                    className="flex-1 h-[48px] border-none bg-neutral-100 placeholder-neutral-400 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
+                    className="flex-1 h-12 border border-surface-border bg-white placeholder-text-disabled rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/20 transition-all shadow-sm"
                   />
                   <motion.button
                     type="button"
@@ -702,7 +702,7 @@ export default function AddToiletPage() {
                     transition={{ duration: 0.08 }}
                     onClick={handleSearchPlaces}
                     disabled={searchLoading}
-                    className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-[48px] px-4 rounded-[14px] transition-colors shadow-button"
+                    className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium h-12 px-4 rounded-xl transition-colors shadow-button"
                   >
                     {searchLoading ? "Searching..." : "Search"}
                   </motion.button>
@@ -755,22 +755,22 @@ export default function AddToiletPage() {
             )}
 
             {gpsError && (
-              <div className="text-xs text-brand-coralText font-normal bg-brand-coralLight p-2.5 rounded-[14px] border border-brand-coral/10 text-center">
+              <div className="text-xs text-text-secondary font-normal bg-brand-greenVeryLight p-2.5 rounded-[14px] border border-brand-green/10 text-center">
                 GPS detection failed. Tap on the map to place the pin manually.
               </div>
             )}
 
             {duplicateToilet && !dismissedDuplicate && (
-              <div className="bg-brand-yellowLight border border-brand-yellow/20 text-brand-yellowText p-3 rounded-[20px] text-xs font-normal flex flex-col gap-2 shadow-card">
+              <div className="bg-brand-greenVeryLight border border-brand-green/20 text-text-primary p-3 rounded-[20px] text-xs font-normal flex flex-col gap-2 shadow-card">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-brand-yellow flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-brand-green flex-shrink-0 mt-0.5" />
                   <div className="flex flex-col text-left">
                     <span>A toilet was already added nearby.</span>
-                    <span className="text-neutral-600 font-medium">({duplicateToilet.name})</span>
+                    <span className="text-text-secondary font-medium">({duplicateToilet.name})</span>
                   </div>
                 </div>
                 <div className="flex gap-2 justify-end mt-1">
-                  <Link href={`/toilet/${duplicateToilet.id}`} target="_blank" className="bg-brand-yellow hover:bg-brand-yellowText/20 text-brand-yellowText px-3 py-1.5 rounded-[14px] font-medium text-center transition-colors">
+                  <Link href={`/toilet/${duplicateToilet.id}`} target="_blank" className="bg-brand-green hover:bg-brand-greenDark text-white px-3 py-1.5 rounded-[14px] font-medium text-center transition-colors">
                     View existing
                   </Link>
                   <motion.button 
@@ -808,7 +808,7 @@ export default function AddToiletPage() {
                 placeholder="e.g. Kozhikode Beach Public Toilet"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-[48px] border-none bg-neutral-100 placeholder-neutral-400 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
+                className="w-full h-12 border border-surface-border bg-white placeholder-text-disabled rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/20 transition-all shadow-sm"
               />
             </div>
 
@@ -819,7 +819,7 @@ export default function AddToiletPage() {
                 placeholder="e.g. Beach Road (Near Main Walkway)"
                 value={locationName}
                 onChange={(e) => setLocationName(e.target.value)}
-                className="w-full h-[48px] border-none bg-neutral-100 placeholder-neutral-400 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
+                className="w-full h-12 border border-surface-border bg-white placeholder-text-disabled rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/20 transition-all shadow-sm"
               />
             </div>
 
@@ -828,7 +828,7 @@ export default function AddToiletPage() {
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full h-[48px] border-none bg-neutral-100 rounded-[14px] px-4 text-[14px] text-neutral-900 focus:outline-none"
+                className="w-full h-12 border border-surface-border bg-white rounded-xl px-4 text-sm text-text-primary focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/20 transition-all shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.65rem_auto] bg-[right_1rem_center] bg-no-repeat pr-10"
               >
                 <option value="Public Toilet">Public Toilet</option>
                 <option value="Petrol Pump">Petrol Pump</option>

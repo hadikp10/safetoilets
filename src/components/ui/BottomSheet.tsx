@@ -40,17 +40,17 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 350 }}
-            className="w-full max-w-md bg-surface-card dark:bg-dark-card rounded-t-[28px] border-t border-surface-border dark:border-dark-border shadow-2xl relative z-10 pb-[env(safe-area-inset-bottom)]"
+            className="w-full max-w-md bg-surface-card rounded-t-[28px] border-t border-surface-border shadow-2xl relative z-10 pb-[env(safe-area-inset-bottom)]"
           >
             {/* iOS-Style Drag Handle */}
-            <div className="w-9 h-1.5 bg-surface-border dark:bg-dark-border rounded-full mx-auto my-3" />
+            <div className="w-9 h-1.5 bg-surface-border rounded-full mx-auto my-3" />
             
             {/* Header */}
-            <div className="px-4 pb-3 flex items-center justify-between border-b border-surface-border dark:border-dark-border">
-              <h3 className="text-base font-semibold text-text-primary dark:text-text-inverse">{title}</h3>
+            <div className="px-4 pb-3 flex items-center justify-between border-b border-surface-border">
+              <h3 className="text-base font-semibold text-text-primary">{title}</h3>
               <button
                 onClick={onClose}
-                className="text-text-secondary hover:text-text-primary dark:hover:text-text-inverse min-h-[44px] min-w-[44px] flex items-center justify-center text-sm font-medium"
+                className="text-text-secondary hover:text-text-primary min-h-[44px] min-w-[44px] flex items-center justify-center text-sm font-medium"
               >
                 Cancel
               </button>

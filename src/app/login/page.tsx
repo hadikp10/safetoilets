@@ -44,9 +44,9 @@ export default function LoginPage() {
 
   if (authTimeout && !authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto font-sans">
-        <div className="w-12 h-12 text-brand-yellow bg-brand-yellowLight rounded-full flex items-center justify-center mb-4">
-          <AlertTriangle className="w-6 h-6 text-brand-yellow" />
+      <div className="min-h-screen bg-surface-bg flex flex-col items-center justify-center p-6 text-center max-w-sm mx-auto font-sans">
+        <div className="w-12 h-12 text-text-secondary bg-surface-muted rounded-full flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 text-text-secondary" />
         </div>
         <h3 className="text-base font-semibold text-neutral-900">Authentication Timeout</h3>
         <p className="text-xs text-neutral-600 mt-2 leading-relaxed">
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
   if (loading && !authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-bg flex items-center justify-center">
         <svg className="animate-spin h-6 w-6 text-brand-green" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
@@ -93,7 +93,7 @@ export default function LoginPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col justify-start px-4 pt-20 pb-8"
+      className="min-h-screen bg-surface-bg text-neutral-900 flex flex-col justify-start px-4 pt-20 pb-8"
     >
       <div className="w-full max-w-[320px] mx-auto flex flex-col items-stretch">
         

@@ -125,7 +125,7 @@ export default function VerifyToiletForm({
       <div className="flex flex-col gap-1.5">
         <div className="flex justify-between items-center text-[11px] font-normal tracking-wide uppercase text-neutral-400">
           <span>{label}</span>
-          <span className="text-brand-green font-mono flex items-center gap-0.5">{value} <Star className="w-3 h-3 fill-current text-brand-yellow" /></span>
+          <span className="text-brand-green font-mono flex items-center gap-0.5">{value} <Star className="w-3 h-3 fill-current text-brand-green" /></span>
         </div>
         <div className="flex bg-neutral-100 p-1 rounded-[14px] w-full border border-neutral-200">
           {[1, 2, 3, 4, 5].map((num) => (
@@ -163,7 +163,7 @@ export default function VerifyToiletForm({
 
         <form onSubmit={handleSubmit} className="p-4 flex-1 overflow-y-auto no-scrollbar space-y-4 text-left">
           {errorMsg && (
-            <div className="bg-brand-coralLight border border-brand-coral/20 text-brand-coralText p-3 rounded-[14px] text-xs font-normal">
+            <div className="bg-brand-greenVeryLight border border-brand-green/20 text-text-secondary p-3 rounded-[14px] text-xs font-normal">
               {errorMsg}
             </div>
           )}

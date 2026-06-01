@@ -12,12 +12,12 @@ export default function VerificationBadge({ updatedAt }: VerificationBadgeProps)
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
 
-  let bgClass = "bg-brand-greenLight text-brand-green border-brand-green/10";
+  let bgClass = "bg-brand-greenLight text-brand-greenDark border-brand-green/20";
 
   if (diffHours >= 24) {
-    bgClass = "bg-surface-muted text-text-secondary border-surface-border dark:bg-dark-muted dark:text-text-secondary dark:border-dark-border";
+    bgClass = "bg-surface-muted text-text-secondary border-surface-border";
   } else if (diffHours >= 1) {
-    bgClass = "bg-brand-yellowLight text-brand-yellow border-brand-yellow/10";
+    bgClass = "bg-brand-greenVeryLight text-brand-green border-brand-green/10";
   }
 
   const timeAgoStr = formatTimeAgo(updatedAt);

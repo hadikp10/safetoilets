@@ -150,10 +150,11 @@ export default function MapView({
     if (isAddingMode || !interactive) {
       // If static mini-map, only render the target pin
       if (!interactive && selectedToilet) {
-        const color = selectedToilet.overall_score >= 4 ? "green" : selectedToilet.overall_score >= 2.5 ? "yellow" : "red";
+        const score = selectedToilet.overall_score;
+        const markerBgClass = score >= 4 ? "bg-brand-green" : score >= 2.5 ? "bg-brand-greenLight" : "bg-text-secondary";
         
         const pinIcon = L.divIcon({
-          className: `w-3.5 h-3.5 rounded-full border-2 border-white shadow bg-brand-${color === "green" ? "green" : color === "yellow" ? "yellow" : "coral"}`,
+          className: `w-3.5 h-3.5 rounded-full border-2 border-white shadow ${markerBgClass}`,
           iconSize: [14, 14],
           iconAnchor: [7, 7],
         });
@@ -169,11 +170,11 @@ export default function MapView({
       if (restroom.is_hidden) return;
 
       const score = restroom.overall_score;
-      const color = score >= 4 ? "green" : score >= 2.5 ? "yellow" : "red";
+      const markerBgClass = score >= 4 ? "bg-brand-green" : score >= 2.5 ? "bg-brand-greenLight" : "bg-text-secondary";
 
       // Div icon marker
       const customIcon = L.divIcon({
-        className: `w-3.5 h-3.5 rounded-full border-2 border-white shadow bg-brand-${color === "green" ? "green" : color === "yellow" ? "yellow" : "coral"}`,
+        className: `w-3.5 h-3.5 rounded-full border-2 border-white shadow ${markerBgClass}`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
       });
@@ -210,8 +211,8 @@ export default function MapView({
         className: "",
         html: `
           <div class="relative w-4 h-4">
-            <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md z-10 relative"></div>
-            <div class="w-4 h-4 bg-blue-400 rounded-full absolute top-0 left-0 animate-location-pulse"></div>
+            <div class="w-4 h-4 bg-brand-green rounded-full border-2 border-white shadow-md z-10 relative"></div>
+            <div class="w-4 h-4 bg-brand-greenLight rounded-full absolute top-0 left-0 animate-location-pulse"></div>
           </div>
         `,
         iconSize: [16, 16],

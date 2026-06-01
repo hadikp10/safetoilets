@@ -53,7 +53,7 @@ export default function AuthCallbackPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-surface-bg flex flex-col items-center justify-center p-6 text-center">
         <div className="flex flex-col items-center gap-3">
           <svg className="animate-spin h-8 w-8 text-brand-green" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -71,11 +71,11 @@ export default function AuthCallbackPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-        className="min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6 text-center"
+        className="min-h-screen bg-surface-bg flex flex-col items-center justify-center p-6 text-center"
       >
         <div className="max-w-md bg-white border border-neutral-200 p-8 rounded-[20px] shadow-card flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-brand-coralLight flex items-center justify-center mb-4">
-            <AlertTriangle className="w-6 h-6 text-brand-coral" />
+          <div className="w-12 h-12 rounded-full bg-surface-muted border border-border flex items-center justify-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-text-secondary" />
           </div>
           <h1 className="text-[20px] font-semibold text-neutral-900 mt-2">
             Login Callback Failed

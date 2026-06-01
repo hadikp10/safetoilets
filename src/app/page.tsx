@@ -146,7 +146,7 @@ export default function HomePage() {
           
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-neutral-400" />
+              <Search className="absolute left-3 top-3 w-4 h-4 text-text-secondary" />
               <input
                 type="text"
                 placeholder="E.g. Kochi, Trivandrum, Kozhikode..."
@@ -155,21 +155,21 @@ export default function HomePage() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSearchPlaces();
                 }}
-                className="w-full pl-9 pr-4 py-2 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-brand-green"
+                className="w-full h-10 pl-9 pr-4 border border-surface-border bg-white placeholder-text-disabled rounded-xl text-sm text-text-primary focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/20 transition-all shadow-sm"
               />
             </div>
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={handleSearchPlaces}
               disabled={searchLoading}
-              className="bg-brand-green hover:bg-brand-greenDark text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+              className="bg-brand-green hover:bg-brand-greenDark text-white text-sm font-medium h-10 px-4 rounded-xl transition-colors disabled:opacity-50 shadow-sm"
             >
               {searchLoading ? "Searching..." : "Search"}
             </motion.button>
           </div>
 
           {searchError && (
-            <span className="text-xs text-brand-coralText bg-brand-coralLight px-3 py-1.5 rounded-lg border border-brand-coral/20">
+            <span className="text-xs text-text-secondary bg-brand-greenVeryLight px-3 py-1.5 rounded-lg border border-brand-green/20">
               {searchError}
             </span>
           )}
@@ -332,9 +332,9 @@ export default function HomePage() {
 
   if (!hasAcceptedLanding) {
     return (
-      <div className="min-h-screen bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse flex flex-col relative overflow-x-hidden">
+      <div className="min-h-screen bg-surface-bg text-text-primary flex flex-col relative overflow-x-hidden">
         {/* Header Bar */}
-        <header className="h-[52px] bg-surface-card dark:bg-dark-card border-b border-surface-border dark:border-dark-border px-4 flex items-center justify-between">
+        <header className="h-[52px] bg-surface-card border-b border-surface-border px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-brand-green font-bold text-xl tracking-tight">SafeToilets</span>
           </div>
@@ -365,13 +365,13 @@ export default function HomePage() {
             className="flex flex-col items-center w-full"
           >
             {/* Tag Badge */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-greenLight text-brand-greenDark dark:bg-brand-green/10 dark:text-brand-green mb-6 border border-brand-green/10">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-greenLight text-brand-greenDark mb-6 border border-brand-green/10">
               <Sparkles className="w-3.5 h-3.5 animate-pulse" />
               100% Verified Community Restrooms
             </span>
 
             {/* Headline */}
-            <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-text-primary dark:text-text-inverse sm:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-text-primary sm:text-4xl">
               Find Public Toilets Near You
             </h1>
 
@@ -418,31 +418,31 @@ export default function HomePage() {
               Why SafeToilets?
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+              <div className="bg-surface-card border border-surface-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
                 <ShieldCheck className="w-5 h-5 text-brand-green" />
                 <div>
-                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Community-Contributed</h3>
+                  <h3 className="text-xs font-bold text-text-primary font-sans">Community-Contributed</h3>
                   <p className="text-[10px] text-text-secondary mt-0.5">Verified updates from visitors.</p>
                 </div>
               </div>
-              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+              <div className="bg-surface-card border border-surface-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
                 <Accessibility className="w-5 h-5 text-brand-green" />
                 <div>
-                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Gender & Access</h3>
+                  <h3 className="text-xs font-bold text-text-primary font-sans">Gender & Access</h3>
                   <p className="text-[10px] text-text-secondary mt-0.5">Accessibility & safety indicators.</p>
                 </div>
               </div>
-              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+              <div className="bg-surface-card border border-surface-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
                 <Sparkles className="w-5 h-5 text-brand-green" />
                 <div>
-                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Amenities Listed</h3>
+                  <h3 className="text-xs font-bold text-text-primary font-sans">Amenities Listed</h3>
                   <p className="text-[10px] text-text-secondary mt-0.5">Soap, mirrors, bins documented.</p>
                 </div>
               </div>
-              <div className="bg-surface-card dark:bg-dark-card border border-surface-border dark:border-dark-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
+              <div className="bg-surface-card border border-surface-border rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-28">
                 <Compass className="w-5 h-5 text-brand-green" />
                 <div>
-                  <h3 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Location Search</h3>
+                  <h3 className="text-xs font-bold text-text-primary font-sans">Location Search</h3>
                   <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Real-time distance metrics.</p>
                 </div>
               </div>
@@ -454,36 +454,36 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: 0.16, ease: "easeOut" }}
-            className="w-full mt-10 border-t border-surface-border dark:border-dark-border pt-8 pb-4"
+            className="w-full mt-10 border-t border-surface-border pt-8 pb-4"
           >
             <h2 className="text-xs font-bold text-text-secondary uppercase tracking-wider text-left mb-4 px-2">
               Features
             </h2>
             <div className="space-y-3.5 text-left px-2">
               <div className="flex items-start gap-3">
-                <div className="p-1.5 rounded-lg bg-brand-greenLight dark:bg-brand-green/10 text-brand-green">
+                <div className="p-1.5 rounded-lg bg-brand-greenLight text-brand-green">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Cleanliness Ratings</h4>
+                  <h4 className="text-xs font-bold text-text-primary font-sans">Cleanliness Ratings</h4>
                   <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Five-star scores on hygiene, smell, lighting, safety, and water.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="p-1.5 rounded-lg bg-brand-greenLight dark:bg-brand-green/10 text-brand-green">
+                <div className="p-1.5 rounded-lg bg-brand-greenLight text-brand-green">
                   <ImageIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Visitor Photos</h4>
+                  <h4 className="text-xs font-bold text-text-primary font-sans">Visitor Photos</h4>
                   <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Real user uploads to preview cleanliness before arriving.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="p-1.5 rounded-lg bg-brand-greenLight dark:bg-brand-green/10 text-brand-green">
+                <div className="p-1.5 rounded-lg bg-brand-greenLight text-brand-green">
                   <Clock className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-text-primary dark:text-text-inverse font-sans">Opening Hours</h4>
+                  <h4 className="text-xs font-bold text-text-primary font-sans">Opening Hours</h4>
                   <p className="text-[10px] text-text-secondary mt-0.5 font-sans">Checks on night safety and 24-hour service flags.</p>
                 </div>
               </div>
@@ -514,7 +514,7 @@ export default function HomePage() {
                   <Lock className="w-6 h-6" />
                 </div>
               ) : isFinalFailure ? (
-                <div className="w-12 h-12 text-brand-yellow bg-brand-yellowLight rounded-full flex items-center justify-center animate-pulse">
+                <div className="w-12 h-12 text-text-secondary bg-surface-muted rounded-full flex items-center justify-center animate-pulse">
                   <AlertCircle className="w-6 h-6" />
                 </div>
               ) : (
@@ -645,30 +645,30 @@ export default function HomePage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-screen bg-surface-bg dark:bg-dark-bg text-text-primary dark:text-text-inverse flex flex-col relative overflow-x-hidden"
+      className="min-h-screen bg-surface-bg text-text-primary flex flex-col relative overflow-x-hidden"
     >
       
-      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-surface-card/90 dark:bg-dark-card/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-surface-border dark:border-dark-border">
+      <header className="sticky top-0 z-50 h-[52px] px-4 flex justify-between items-center bg-surface-card/90 backdrop-blur-md backdrop-saturate-[180%] border-b border-surface-border">
         <div className="flex items-center">
-          <Link href="/" className="text-sm font-bold text-text-primary dark:text-text-inverse tracking-tight flex items-center gap-1.5">
+          <Link href="/" className="text-sm font-bold text-text-primary tracking-tight flex items-center gap-1.5">
             <span className="text-brand-green">SafeToilets</span>
           </Link>
         </div>
 
         <div className="flex items-center gap-3 min-h-[32px]">
           {authLoading ? (
-            <div className="w-7 h-7 rounded-full bg-surface-muted dark:bg-dark-muted animate-pulse" />
+            <div className="w-7 h-7 rounded-full bg-surface-muted animate-pulse" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-2.5">
               <Link
                 href="/profile"
-                className="w-7 h-7 rounded-full bg-brand-greenLight text-brand-greenDark dark:bg-brand-green/20 dark:text-brand-green text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-brand-greenLight/80"
+                className="w-7 h-7 rounded-full bg-brand-greenLight text-brand-greenDark text-[12px] font-medium flex items-center justify-center transition-colors hover:bg-brand-greenLight/80"
               >
                 {getInitials(profile?.full_name)}
               </Link>
               <button
                 onClick={logout}
-                className="text-[13px] text-text-secondary hover:text-text-primary dark:hover:text-text-inverse font-medium transition-colors"
+                className="text-[13px] text-text-secondary hover:text-text-primary font-medium transition-colors"
               >
                 Logout
               </button>
@@ -680,6 +680,16 @@ export default function HomePage() {
               </Button>
             </Link>
           )}
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setSearchModalOpen(true)}
+            className="text-text-secondary hover:text-text-primary rounded-full min-h-[28px] min-w-[28px]"
+            aria-label="Search places"
+          >
+            <Search className="w-4 h-4" />
+          </Button>
 
           <Link href="/add">
             <Button size="sm" className="bg-brand-green hover:bg-brand-greenDark text-text-inverse rounded-full font-semibold px-4">
@@ -722,14 +732,14 @@ export default function HomePage() {
 
       {/* Geolocation Access Denied Banner */}
       {browseWithoutCoords && geoError && (
-        <div className="mx-4 my-3 bg-brand-yellowLight text-brand-yellowText border border-brand-yellow/30 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+        <div className="mx-4 my-3 bg-brand-greenVeryLight text-text-primary border border-brand-green/20 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
           <div className="flex items-start gap-2.5">
-            <MapPin className="w-5 h-5 text-brand-yellow" />
+            <MapPin className="w-5 h-5 text-brand-green" />
             <div className="flex flex-col text-left">
               <span className="text-sm font-medium">
                 {geoError.toLowerCase().includes("denied") ? "Location access was denied." : "Location access issue"}
               </span>
-              <span className="text-xs text-neutral-600 mt-0.5">{geoError}</span>
+              <span className="text-xs text-text-secondary mt-0.5">{geoError}</span>
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -766,7 +776,7 @@ export default function HomePage() {
               }}
               whileTap={{ scale: 0.96 }}
               transition={{ duration: 0.08 }}
-              className="bg-white hover:bg-neutral-100 text-brand-yellowText border border-neutral-200 text-xs font-medium rounded-lg px-4 py-2 transition-colors"
+              className="bg-white hover:bg-neutral-100 text-text-secondary border border-neutral-200 text-xs font-medium rounded-lg px-4 py-2 transition-colors"
             >
               Browse All Toilets
             </motion.button>
@@ -873,12 +883,12 @@ export default function HomePage() {
 
           {/* Toilet list items container */}
           <div 
-            className="overflow-y-auto pb-8 no-scrollbar bg-surface-bg dark:bg-dark-bg py-4"
+            className="overflow-y-auto pb-8 no-scrollbar bg-surface-bg py-4"
             style={{ height: "calc(100dvh - 52px - 52vh - 44px)" }}
           >
             {toiletsError ? (
-              <div className="mx-4 my-2 py-3 px-4 bg-brand-coralLight border border-brand-coral/30 rounded-xl flex items-center gap-2">
-                <span className="text-brand-coralText text-xs flex-1">
+              <div className="mx-4 my-2 py-3 px-4 bg-brand-greenVeryLight border border-brand-green/20 rounded-xl flex items-center gap-2">
+                <span className="text-text-secondary text-xs flex-1">
                   Couldn&apos;t load. Check connection.
                 </span>
                 <motion.button 
@@ -916,22 +926,24 @@ export default function HomePage() {
                   </motion.button>
                 </div>
               ) : (
-                /* Empty State (Notion style) */
-                <div className="py-16 flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border border-neutral-200 rounded-xl flex items-center justify-center text-xl text-neutral-400 font-mono">
-                    ?
+                /* Polished Empty State (Apple/Notion style) */
+                <div className="py-12 px-6 mx-4 my-2 bg-white rounded-2xl border border-surface-border text-center flex flex-col items-center gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.01),0_1px_2px_rgba(0,0,0,0.03)]">
+                  <div className="w-12 h-12 bg-neutral-50 rounded-full border border-neutral-100 flex items-center justify-center text-lg shadow-sm">
+                    📍
                   </div>
-                  <h3 className="text-base font-medium text-neutral-900">No toilets here yet</h3>
-                  <p className="text-sm text-neutral-600 text-center max-w-[200px] leading-relaxed">
-                    Add the first one and help your community.
-                  </p>
-                  <Link href="/add" className="mt-2">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-text-primary">No toilets added in this area</h3>
+                    <p className="text-xs text-text-secondary max-w-[240px] leading-relaxed mx-auto">
+                      Be the first to help your community by mapping a nearby public restroom.
+                    </p>
+                  </div>
+                  <Link href="/add">
                     <motion.button
                       whileTap={{ scale: 0.96 }}
                       transition={{ duration: 0.08 }}
-                      className="bg-brand-green hover:bg-brand-greenDark text-white text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+                      className="bg-brand-green hover:bg-brand-greenDark text-white text-xs font-semibold h-9 px-4 rounded-xl shadow-sm transition-colors flex items-center gap-1"
                     >
-                      + Add toilet
+                      <span>+ Add Restroom</span>
                     </motion.button>
                   </Link>
                 </div>
@@ -976,11 +988,11 @@ export default function HomePage() {
       {/* Geolocation Permission Onboarding Modal */}
       {showLocationPrompt && (
         <div className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-card dark:bg-dark-card w-full max-w-sm rounded-2xl p-6 border border-surface-border dark:border-dark-border shadow-2xl flex flex-col gap-4 text-center">
+          <div className="bg-surface-card w-full max-w-sm rounded-2xl p-6 border border-surface-border shadow-2xl flex flex-col gap-4 text-center">
             <div className="w-12 h-12 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center text-xl mx-auto">
               📍
             </div>
-            <h3 className="font-bold text-text-primary dark:text-text-inverse text-lg">Location Access</h3>
+            <h3 className="font-bold text-text-primary text-lg">Location Access</h3>
             <p className="text-xs text-text-secondary leading-relaxed">
               SafeToilets needs your location to find nearby toilets.
             </p>

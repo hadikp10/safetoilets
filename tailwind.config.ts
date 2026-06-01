@@ -6,7 +6,6 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: "media",
   theme: {
     extend: {
       colors: {
@@ -47,29 +46,19 @@ const config: Config = {
           green: "#22C55E",
           greenDark: "#15803D",
           greenLight: "#DCFCE7",
-          yellow: "#FBBF24",
-          yellowLight: "#FEF3C7",
-          red: "#DC2626",
-          redLight: "#FEE2E2",
-          sky: "#0EA5E9",
+          greenVeryLight: "#F0FDF4",
         },
         surface: {
           bg: "#FAFAF7",
           card: "#FFFFFF",
           border: "#E5E7EB",
-          muted: "#F3F4F6",
+          muted: "#F5F5F0",
         },
         text: {
           primary: "#111827",
           secondary: "#6B7280",
           disabled: "#9CA3AF",
           inverse: "#FFFFFF",
-        },
-        dark: {
-          bg: "#111827",
-          card: "#1F2937",
-          border: "#374151",
-          muted: "#4B5563",
         },
       },
       fontFamily: {
