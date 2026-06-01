@@ -42,18 +42,14 @@ export async function GET(req: Request) {
 
     // Apply secondary filters
     if (filters.length > 0 && !filters.includes("all")) {
-      if (filters.includes("clean")) {
-        filtered = filtered.filter((r) => r.overall_score >= 3.8);
-      }
-      if (filters.includes("womenSafe")) {
-        filtered = filtered.filter((r) => r.avg_women_safety >= 3.8 && (r.gender_access === "Women" || r.gender_access === "Unisex" || r.gender_access === "Both"));
+      if (filters.includes("womenAccessible")) {
+        filtered = filtered.filter((r) => r.gender_access === "Women" || r.gender_access === "Unisex" || r.gender_access === "Both");
       }
       if (filters.includes("accessible")) {
         filtered = filtered.filter((r) => r.is_accessible === true);
       }
       if (filters.includes("twentyFourHours")) {
-        // Approximate 24-hour access by filtering typical continuous utility categories
-        filtered = filtered.filter((r) => r.type === "Petrol Pump" || r.type === "Railway / Bus Station");
+        filtered = filtered.filter((r) => r.open_24_hours === "Yes");
       }
     }
 
@@ -94,6 +90,7 @@ export async function POST(req: Request) {
       toilet_type,
       gender_access,
       is_accessible,
+      open_24_hours,
       cleanliness,
       smell,
       lighting,
@@ -104,6 +101,48 @@ export async function POST(req: Request) {
       has_sanitary,
       photoBase64,
     } = body;
+
+    // Validate inputs
+    if (!name || typeof name !== "string" || name.trim().length === 0 || name.trim().length > 100) {
+      return NextResponse.json({ error: "Invalid toilet name. It must be between 1 and 100 characters." }, { status: 400 });
+    }
+    if (!location_name || typeof location_name !== "string" || location_name.trim().length === 0 || location_name.trim().length > 250) {
+      return NextResponse.json({ error: "Invalid location name. It must be between 1 and 250 characters." }, { status: 400 });
+    }
+    if (typeof latitude !== "number" || latitude < -90 || latitude > 90) {
+      return NextResponse.json({ error: "Invalid latitude. It must be a number between -90 and 90." }, { status: 400 });
+    }
+    if (typeof longitude !== "number" || longitude < -180 || longitude > 180) {
+      return NextResponse.json({ error: "Invalid longitude. It must be a number between -180 and 180." }, { status: 400 });
+    }
+
+    const validTypes = ['Restaurant', 'Petrol Pump', 'Mall', 'Railway / Bus Station', 'Public Toilet', 'Other'];
+    if (!validTypes.includes(type)) {
+      return NextResponse.json({ error: "Invalid restroom type category." }, { status: 400 });
+    }
+
+    const validToiletTypes = ['Indian', 'European', 'Both'];
+    if (!validToiletTypes.includes(toilet_type)) {
+      return NextResponse.json({ error: "Invalid toilet standard type." }, { status: 400 });
+    }
+
+    const validGenderAccess = ['Men', 'Women', 'Unisex', 'Both'];
+    if (!validGenderAccess.includes(gender_access)) {
+      return NextResponse.json({ error: "Invalid gender access type." }, { status: 400 });
+    }
+
+    const ratings = [cleanliness, smell, lighting, women_safety, water_availability];
+    for (const rating of ratings) {
+      if (typeof rating !== "number" || rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+        return NextResponse.json({ error: "All rating values must be integers between 1 and 5." }, { status: 400 });
+      }
+    }
+
+    const validOpen24Hours = ['Yes', 'No', 'Not Sure'];
+    if (open_24_hours !== undefined && !validOpen24Hours.includes(open_24_hours)) {
+      return NextResponse.json({ error: "Invalid 24 hours status option." }, { status: 400 });
+    }
+
 
     // 1. Insert Restroom Row
     const { data: newRestroom, error: restroomError } = await supabase
@@ -117,6 +156,7 @@ export async function POST(req: Request) {
         toilet_type,
         gender_access,
         is_accessible,
+        open_24_hours: open_24_hours || "Not Sure",
         created_by: user.id,
         overall_score: 0.00,
       })

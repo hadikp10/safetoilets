@@ -49,6 +49,7 @@ create table public.restrooms (
   public_image_url text,
   backup_image_url text,
   
+  open_24_hours text default 'Not Sure' check (open_24_hours in ('Yes', 'No', 'Not Sure')) not null,
   is_hidden boolean default false not null,
   created_by uuid references public.profiles(id) on delete set null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -109,6 +110,17 @@ create index idx_reports_status on public.reports (status);
 -- =========================================================================
 -- 3. FUNCTIONS & TRIGGERS DEFINITIONS
 -- =========================================================================
+
+-- Function to check if a user is an admin (bypasses RLS recursion)
+create or replace function public.is_admin()
+returns boolean as $$
+begin
+  return exists (
+    select 1 from public.profiles
+    where id = auth.uid() and is_admin = true
+  );
+end;
+$$ language plpgsql security definer;
 
 -- Trigger to auto-create profile on auth sign up
 create or replace function public.handle_new_user()
@@ -283,15 +295,15 @@ alter table public.reports enable row level security;
 alter table public.admin_actions enable row level security;
 
 -- Profiles Policies
-create policy "Allow public read for profiles" on public.profiles
-  for select using (true);
+create policy "Allow users to read their own profile" on public.profiles
+  for select using (auth.uid() = id);
 
 create policy "Allow users to update own profile" on public.profiles
   for update using (auth.uid() = id);
 
 create policy "Admins can do everything on profiles" on public.profiles
   for all using (
-    exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+    public.is_admin()
   );
 
 -- Restrooms Policies
@@ -310,6 +322,7 @@ create policy "Allow authenticated users to create restrooms" on public.restroom
   for insert with check (
     auth.uid() is not null 
     and (exists (select 1 from public.profiles where id = auth.uid() and is_banned = false))
+    and (created_by = auth.uid())
   );
 
 create policy "Allow admins to update/delete restrooms" on public.restrooms
@@ -325,6 +338,7 @@ create policy "Allow authenticated users to create verifications" on public.rest
   for insert with check (
     auth.uid() is not null 
     and (exists (select 1 from public.profiles where id = auth.uid() and is_banned = false))
+    and (user_id = auth.uid())
   );
 
 create policy "Allow admins to do everything on verifications" on public.restroom_verifications
@@ -334,7 +348,10 @@ create policy "Allow admins to do everything on verifications" on public.restroo
 
 -- Reports Policies
 create policy "Allow anyone to submit reports" on public.reports
-  for insert with check (true);
+  for insert with check (
+    (user_id is null) 
+    or (auth.uid() = user_id)
+  );
 
 create policy "Admins can view and manage reports" on public.reports
   for all using (

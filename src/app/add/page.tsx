@@ -54,6 +54,7 @@ export default function AddToiletPage() {
   const [genderAccess, setGenderAccess] = useState("Both");
   const [accessibilityAnswer, setAccessibilityAnswer] = useState<"yes" | "no" | null>(null);
   const [isAccessible, setIsAccessible] = useState(false);
+  const [open24Hours, setOpen24Hours] = useState("Not Sure");
 
   // Initial Ratings
   const [cleanliness, setCleanliness] = useState(0);
@@ -155,6 +156,7 @@ export default function AddToiletPage() {
             setAccessibilityAnswer(parsed.accessibilityAnswer);
             setIsAccessible(parsed.accessibilityAnswer === "yes");
           }
+          if (parsed.open24Hours) setOpen24Hours(parsed.open24Hours);
           if (parsed.cleanliness) setCleanliness(parsed.cleanliness);
           if (parsed.smell) setSmell(parsed.smell);
           if (parsed.lighting) setLighting(parsed.lighting);
@@ -183,6 +185,7 @@ export default function AddToiletPage() {
         toiletType,
         genderAccess,
         accessibilityAnswer,
+        open24Hours,
         cleanliness,
         smell,
         lighting,
@@ -204,6 +207,7 @@ export default function AddToiletPage() {
     toiletType,
     genderAccess,
     accessibilityAnswer,
+    open24Hours,
     cleanliness,
     smell,
     lighting,
@@ -370,15 +374,18 @@ export default function AddToiletPage() {
       setStep(6);
     } 
     else if (step === 6) {
+      setStep(7);
+    }
+    else if (step === 7) {
       if (cleanliness < 1 || smell < 1 || lighting < 1 || womenSafety < 1 || waterAvailability < 1) {
         setErrorMsg("Please select at least 1 star for all rating categories.");
         triggerShake();
         return;
       }
-      setStep(7);
-    } 
-    else if (step === 7) {
       setStep(8);
+    } 
+    else if (step === 8) {
+      setStep(9);
     }
   };
 
@@ -496,6 +503,7 @@ export default function AddToiletPage() {
           toilet_type: toiletType,
           gender_access: genderAccess,
           is_accessible: isAccessible,
+          open_24_hours: open24Hours,
           cleanliness,
           smell,
           lighting,
@@ -592,7 +600,7 @@ export default function AddToiletPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll text-left"
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col gap-3 sm:gap-6 max-w-md mx-auto pb-[env(safe-area-inset-bottom)] page-scroll text-left"
     >
       
       {/* Step Header */}
@@ -609,7 +617,7 @@ export default function AddToiletPage() {
             <span>{step > 1 ? "Back" : "Home"}</span>
           </motion.button>
           <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400">
-            Step {step} of 8
+            Step {step} of 9
           </span>
         </div>
         <h1 className="text-[20px] font-semibold text-neutral-900 tracking-tight leading-snug mt-1">
@@ -618,9 +626,10 @@ export default function AddToiletPage() {
           {step === 3 && "Gender access"}
           {step === 4 && "Toilet style"}
           {step === 5 && "Wheelchair accessibility"}
-          {step === 6 && "Quality ratings"}
-          {step === 7 && "Amenities checklist"}
-          {step === 8 && "Photo upload"}
+          {step === 6 && "24 Hours open"}
+          {step === 7 && "Quality ratings"}
+          {step === 8 && "Amenities checklist"}
+          {step === 9 && "Photo upload"}
         </h1>
       </div>
 
@@ -628,7 +637,7 @@ export default function AddToiletPage() {
       <div className="w-full h-[2px] bg-neutral-200 relative">
         <div 
           className="h-full bg-brand-green transition-all duration-300"
-          style={{ width: `${(step / 8) * 100}%` }}
+          style={{ width: `${(step / 9) * 100}%` }}
         />
       </div>
 
@@ -639,7 +648,7 @@ export default function AddToiletPage() {
       )}
 
       {/* Inner Step Layout - wrapped with horizontal margins */}
-      <div className="px-4 flex-1 flex flex-col gap-4">
+      <div className="px-4 flex-1 flex flex-col gap-2 sm:gap-4">
         
         {/* STEP 1: Select Location */}
         {step === 1 && (
@@ -677,7 +686,7 @@ export default function AddToiletPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col gap-4">
+            <div className="flex-1 flex flex-col gap-2 sm:gap-4 pb-20 sm:pb-0">
               <div className="flex flex-col gap-1.5">
                 <span className="text-[11px] font-normal tracking-wide uppercase text-neutral-400 block">
                   Search Location
@@ -727,7 +736,7 @@ export default function AddToiletPage() {
                 Drag the pin to place it exactly where the restroom is located.
               </p>
 
-              <div className="w-full h-[52vh] rounded-[20px] overflow-hidden border border-neutral-200 relative bg-neutral-100 flex items-center justify-center shadow-card">
+              <div className="w-full h-[28vh] sm:h-[52vh] rounded-[20px] overflow-hidden border border-neutral-200 relative bg-neutral-100 flex items-center justify-center shadow-card">
               {gpsLoading && !latitude ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-8 h-8 rounded-full border-4 border-brand-green border-t-transparent animate-spin"></div>
@@ -786,14 +795,16 @@ export default function AddToiletPage() {
               </div>
             )}
 
-            <motion.button
-              onClick={handleNext}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08 }}
-              className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-all shadow-button mt-4 ${nextBtnShake ? "animate-shake" : ""}`}
-            >
-              Confirm Location
-            </motion.button>
+            <div className="fixed bottom-0 left-0 right-0 bg-neutral-50 px-4 py-3 z-10 border-t border-neutral-200/60 max-w-md mx-auto sm:relative sm:border-none sm:p-0 sm:mt-auto sm:z-0">
+              <motion.button
+                onClick={handleNext}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-all shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Confirm Location
+              </motion.button>
+            </div>
           </div>
           )
         )}
@@ -1024,8 +1035,60 @@ export default function AddToiletPage() {
           </div>
         )}
 
-        {/* STEP 6: Star Ratings */}
+        {/* STEP 6: 24 Hours open */}
         {step === 6 && (
+          <div className="flex-1 flex flex-col gap-4">
+            <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Is this toilet open 24 hours?</p>
+
+            <div className="flex flex-col border border-neutral-200 rounded-[14px] overflow-hidden divide-y divide-neutral-200">
+              {["Yes", "No", "Not Sure"].map((option) => (
+                <motion.button
+                  key={option}
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.08 }}
+                  onClick={() => setOpen24Hours(option)}
+                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors duration-100 text-left ${
+                    open24Hours === option ? "bg-brand-greenLight" : "bg-white"
+                  }`}
+                >
+                  <div 
+                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                      open24Hours === option ? "border-brand-green bg-brand-green" : "border-neutral-400 bg-white"
+                    }`}
+                  >
+                    {open24Hours === option && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-[14px] text-neutral-900 font-normal">{option}</span>
+                </motion.button>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                onClick={handlePrev}
+                className="bg-transparent border border-neutral-200 text-neutral-900 text-[14px] font-medium h-[52px] w-full rounded-[14px] hover:bg-neutral-50 transition-colors"
+              >
+                Back
+              </motion.button>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.08 }}
+                onClick={handleNext}
+                className={`bg-brand-green hover:bg-brand-greenDark text-white text-[14px] font-medium h-[52px] w-full rounded-[14px] transition-colors shadow-button ${nextBtnShake ? "animate-shake" : ""}`}
+              >
+                Next
+              </motion.button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 7: Star Ratings */}
+        {step === 7 && (
           <div className="flex-1 flex flex-col gap-6">
             <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Rate each category (minimum 1 star required for each).</p>
 
@@ -1060,8 +1123,8 @@ export default function AddToiletPage() {
           </div>
         )}
 
-        {/* STEP 7: Amenities Checklist */}
-        {step === 7 && (
+        {/* STEP 8: Amenities Checklist */}
+        {step === 8 && (
           <div className="flex-1 flex flex-col gap-4">
             <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Select all facilities present inside the restroom.</p>
 
@@ -1120,8 +1183,8 @@ export default function AddToiletPage() {
           </div>
         )}
 
-        {/* STEP 8: Photo upload */}
-        {step === 8 && (
+        {/* STEP 9: Photo upload */}
+        {step === 9 && (
           <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col gap-4">
             <p className="text-xs text-neutral-600 leading-relaxed -mt-2">Provide a clear photo to help others locate this toilet.</p>
 

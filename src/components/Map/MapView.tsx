@@ -25,7 +25,7 @@ export default function MapView({
 }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<L.Map | null>(null);
-  const markersRef = useRef<{ [key: string]: L.Marker }>({});
+  const markersRef = useRef<{ [key: string]: { marker: L.Marker; score: number } }>({});
   const userMarkerRef = useRef<L.Marker | null>(null);
   const additionMarkerRef = useRef<L.Marker | null>(null);
   const lastFlownRef = useRef<{ latitude: number; longitude: number } | null>(null);
@@ -143,11 +143,13 @@ export default function MapView({
   useEffect(() => {
     if (!map) return;
 
-    // Clear old markers
-    Object.values(markersRef.current).forEach((marker) => map.removeLayer(marker));
-    markersRef.current = {};
-
     if (isAddingMode || !interactive) {
+      // Clear all restroom markers
+      Object.keys(markersRef.current).forEach((id) => {
+        map.removeLayer(markersRef.current[id].marker);
+        delete markersRef.current[id];
+      });
+
       // If static mini-map, only render the target pin
       if (!interactive && selectedToilet) {
         const score = selectedToilet.overall_score;
@@ -160,17 +162,43 @@ export default function MapView({
         });
 
         const singleMarker = L.marker([selectedToilet.latitude, selectedToilet.longitude], { icon: pinIcon }).addTo(map);
-        markersRef.current["single"] = singleMarker;
+        markersRef.current["single"] = { marker: singleMarker, score: selectedToilet.overall_score };
       }
       return;
     }
 
-    // Render multiple restrooms
+    // Clean up single marker if it exists
+    if (markersRef.current["single"]) {
+      map.removeLayer(markersRef.current["single"].marker);
+      delete markersRef.current["single"];
+    }
+
+    const currentRestroomIds = new Set(toilets.filter((r) => !r.is_hidden).map((r) => r.id));
+
+    // 1. Remove markers for restrooms that are no longer in search bounds
+    Object.keys(markersRef.current).forEach((id) => {
+      if (id === "single") return;
+      if (!currentRestroomIds.has(id)) {
+        map.removeLayer(markersRef.current[id].marker);
+        delete markersRef.current[id];
+      }
+    });
+
+    // 2. Add or update markers for current restrooms
     toilets.forEach((restroom) => {
       if (restroom.is_hidden) return;
 
       const score = restroom.overall_score;
       const markerBgClass = score >= 4 ? "bg-brand-green" : score >= 2.5 ? "bg-brand-greenLight" : "bg-text-secondary";
+
+      const existing = markersRef.current[restroom.id];
+      if (existing) {
+        if (existing.score === score) {
+          return; // Skip recreation if score is identical
+        }
+        // Score changed, recreate this marker
+        map.removeLayer(existing.marker);
+      }
 
       // Div icon marker
       const customIcon = L.divIcon({
@@ -185,7 +213,7 @@ export default function MapView({
           onSelectToilet(restroom);
         });
 
-      markersRef.current[restroom.id] = marker;
+      markersRef.current[restroom.id] = { marker, score };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, toilets, isAddingMode, interactive]);

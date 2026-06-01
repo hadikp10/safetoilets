@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -299,32 +299,34 @@ export default function HomePage() {
   const { toilets, isLoading: toiletsLoading, error: toiletsError, mutate } = useNearbyToilets(mapBounds, activeFilters);
 
   // Compute distances relative to user coords or map center
-  const getSortedToilets = () => {
-    let refLat = latitude;
-    let refLng = longitude;
-
-    if (!refLat || !refLng) {
-      if (mapBounds) {
-        refLat = (mapBounds.minLat + mapBounds.maxLat) / 2;
-        refLng = (mapBounds.minLng + mapBounds.maxLng) / 2;
-      } else {
-        refLat = 9.9816;
-        refLng = 76.2999;
-      }
+  const refCoords = useMemo(() => {
+    if (latitude && longitude) {
+      return { latitude, longitude };
     }
+    if (mapBounds) {
+      return {
+        latitude: (mapBounds.minLat + mapBounds.maxLat) / 2,
+        longitude: (mapBounds.minLng + mapBounds.maxLng) / 2,
+      };
+    }
+    return null;
+  }, [latitude, longitude, mapBounds]);
 
-    return [...toilets].sort((a, b) => {
-      const distA = calculateDistance(refLat!, refLng!, a.latitude, a.longitude);
-      const distB = calculateDistance(refLat!, refLng!, b.latitude, b.longitude);
-      return distA - distB;
-    });
-  };
+  const sortedToiletsWithDistance = useMemo(() => {
+    const refLat = refCoords?.latitude ?? 9.9816;
+    const refLng = refCoords?.longitude ?? 76.2999;
 
-  const sortedToilets = getSortedToilets();
-  const refCoords = latitude && longitude ? { latitude, longitude } : (mapBounds ? {
-    latitude: (mapBounds.minLat + mapBounds.maxLat) / 2,
-    longitude: (mapBounds.minLng + mapBounds.maxLng) / 2
-  } : null);
+    const mapped = toilets.map((t) => ({
+      toilet: t,
+      distance: calculateDistance(refLat, refLng, t.latitude, t.longitude),
+    }));
+
+    return mapped.sort((a, b) => a.distance - b.distance);
+  }, [toilets, refCoords]);
+
+  const sortedToilets = useMemo(() => {
+    return sortedToiletsWithDistance.map((item) => item.toilet);
+  }, [sortedToiletsWithDistance]);
 
   const isPermissionDenied = geoError && geoError.toLowerCase().includes("denied");
   const hasError = geoError && !isPermissionDenied;
@@ -963,7 +965,7 @@ export default function HomePage() {
                 }}
                 className="space-y-3.5 px-4"
               >
-                {sortedToilets.map((toilet) => (
+                {sortedToiletsWithDistance.map(({ toilet, distance }) => (
                   <motion.div
                     key={toilet.id}
                     variants={{
@@ -974,7 +976,7 @@ export default function HomePage() {
                   >
                     <ToiletCard
                       toilet={toilet}
-                      distance={refCoords ? calculateDistance(refCoords.latitude, refCoords.longitude, toilet.latitude, toilet.longitude) : null}
+                      distance={refCoords ? distance : null}
                     />
                   </motion.div>
                 ))}

@@ -14,11 +14,21 @@ export default function VerifyToiletForm({
   onClose,
   onSuccess,
 }: VerifyToiletFormProps) {
-  const [cleanliness, setCleanliness] = useState(3);
-  const [smell, setSmell] = useState(3);
-  const [lighting, setLighting] = useState(3);
-  const [womenSafety, setWomenSafety] = useState(3);
-  const [waterAvailability, setWaterAvailability] = useState(3);
+  const [cleanliness, setCleanliness] = useState(() =>
+    toilet.avg_cleanliness > 0 ? Math.round(toilet.avg_cleanliness) : 3
+  );
+  const [smell, setSmell] = useState(() =>
+    toilet.avg_smell > 0 ? Math.round(toilet.avg_smell) : 3
+  );
+  const [lighting, setLighting] = useState(() =>
+    toilet.avg_lighting > 0 ? Math.round(toilet.avg_lighting) : 3
+  );
+  const [womenSafety, setWomenSafety] = useState(() =>
+    toilet.avg_women_safety > 0 ? Math.round(toilet.avg_women_safety) : 3
+  );
+  const [waterAvailability, setWaterAvailability] = useState(() =>
+    toilet.avg_water_availability > 0 ? Math.round(toilet.avg_water_availability) : 3
+  );
 
   const [hasSoap, setHasSoap] = useState(toilet.has_soap);
   const [hasMirror, setHasMirror] = useState(toilet.has_mirror);

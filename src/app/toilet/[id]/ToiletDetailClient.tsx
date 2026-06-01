@@ -370,6 +370,7 @@ export default function ToiletDetailClient({ initialToilet, id }: ToiletDetailCl
               { label: "Toilet type", val: toilet.toilet_type },
               { label: "Gender access", val: toilet.gender_access },
               { label: "Accessibility", val: toilet.is_accessible ? "Accessible" : "Not accessible" },
+              { label: "24 Hours open", val: toilet.open_24_hours || "Not Sure" },
               { label: "Soap", val: toilet.has_soap ? "Available" : "Not available" },
               { label: "Mirror", val: toilet.has_mirror ? "Available" : "Not available" },
               { label: "Sanitary bin", val: toilet.has_sanitary_disposal ? "Available" : "Not available" },

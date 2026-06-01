@@ -58,9 +58,15 @@ export default function VerifyDetailPage({ params }: { params: { id: string } })
     }
   }, [authLoading, isAuthenticated, id, router]);
 
-  // Sync initial amenities when toilet details load
+  // Sync initial ratings and amenities when toilet details load
   useEffect(() => {
     if (toilet) {
+      setCleanliness(toilet.avg_cleanliness > 0 ? Math.round(toilet.avg_cleanliness) : 3);
+      setSmell(toilet.avg_smell > 0 ? Math.round(toilet.avg_smell) : 3);
+      setLighting(toilet.avg_lighting > 0 ? Math.round(toilet.avg_lighting) : 3);
+      setWomenSafety(toilet.avg_women_safety > 0 ? Math.round(toilet.avg_women_safety) : 3);
+      setWaterAvailability(toilet.avg_water_availability > 0 ? Math.round(toilet.avg_water_availability) : 3);
+
       setHasSoap(toilet.has_soap);
       setHasMirror(toilet.has_mirror);
       setHasSanitary(toilet.has_sanitary_disposal);

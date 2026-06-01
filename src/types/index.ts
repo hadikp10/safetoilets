@@ -37,6 +37,7 @@ export interface Restroom {
   public_image_url: string | null;
   backup_image_url: string | null;
   
+  open_24_hours: 'Yes' | 'No' | 'Not Sure';
   is_hidden: boolean;
   created_by: string | null;
   created_at: string;
